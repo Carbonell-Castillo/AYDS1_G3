@@ -1,0 +1,31 @@
+{
+  "name": "ayd1s2g3practica1",
+  "version": "1.0.0",
+  "description": "Practica 1 del curso de analisis y diseño 1 segundo semestre 2025, backend",
+  "keywords": [
+    "practica1"
+  ],
+  "homepage": "https://github.com/Carbonell-Castillo/AYDS1_G3#readme",
+  "bugs": {
+    "url": "https://github.com/Carbonell-Castillo/AYDS1_G3/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Carbonell-Castillo/AYDS1_G3.git"
+  },
+  "license": "ISC",
+  "author": "grupo3",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.1"
+  }
+}
