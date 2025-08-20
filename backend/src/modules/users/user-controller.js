@@ -6,9 +6,16 @@ function getUsers()
 
 }
 
+function getTotalInvertido(dpi) {
+    return db.selectRecord('usuario', { usuario: dpi })
+    .then((user) => {
+        if (!user) throw new Error('User not found');
+        return db.totalInvertido('ingreso', { usuario: user.usuario });
+    });
+}
 
 module.exports = {
-    getUsers
+    getUsers,
+    getTotalInvertido
 
-
-}
+};
