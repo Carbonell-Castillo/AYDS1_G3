@@ -1,0 +1,200 @@
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Boxicons -->
+    <link
+      href="https://cdn.boxicons.com/fonts/basic/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"
+      rel="stylesheet"
+    />
+
+
+<!-- SIDEBAR -->
+<section id="sidebar" class="sidebar" [class.hide]="sidebarHidden">
+  <a href="#" class="brand">
+    <i class="bx bx-car bx-lg"></i>
+    <span class="text">EasyPark</span>
+  </a>
+
+  <ul class="side-menu top">
+    <li [class.active]="activeIndex===0">
+      <a href="#" (click)="setActive(0, $event)">
+        <i class="bx bxs-dashboard bx-sm"></i>
+        <span class="text">Inicio</span>
+      </a>
+    </li>
+    <li [class.active]="activeIndex===1">
+      <a href="#" (click)="setActive(1, $event)">
+        <i class="bx bxs-message-dots bx-sm"></i>
+        <span class="text">Parqueo</span>
+      </a>
+    </li>
+    <li [class.active]="activeIndex===2">
+      <a href="#" (click)="setActive(2, $event)">
+        <i class="bx bxs-shopping-bag-alt bx-sm"></i>
+        <span class="text">Mis Vehiculos</span>
+      </a>
+    </li>
+    <li [class.active]="activeIndex===3">
+      <a href="#" (click)="setActive(3, $event)">
+        <i class="bx bxs-doughnut-chart bx-sm"></i>
+        <span class="text">Multas</span>
+      </a>
+    </li>
+  </ul>
+
+  <ul class="side-menu bottom">
+    <li>
+      <a href="#">
+        <i class="bx bxs-cog bx-sm bx-spin-hover"></i>
+        <span class="text">Configuracion</span>
+      </a>
+    </li>
+    <li>
+      <a href="#" class="logout">
+        <i class="bx bx-arrow-out-down-right-stroke-square"></i>
+        <span class="text">Salir</span>
+      </a>
+    </li>
+  </ul>
+</section>
+<!-- /SIDEBAR -->
+
+<!-- CONTENT -->
+<section id="content" class="content">
+  <!-- NAVBAR -->
+  <nav>
+    <i class="bx bx-menu bx-sm" (click)="toggleSidebar()"></i>
+
+    <a href="#" class="nav-link">Parqueo</a>
+
+    <form action="#" #searchForm [class.show]="searchShow">
+      <div class="form-input">
+        <input type="search" placeholder="Buscar..." />
+        <button type="submit" class="search-btn" (click)="toggleSearch($event)">
+          <i class="bx" [ngClass]="searchShow ? 'bx-x' : 'bx-search'"></i>
+        </button>
+      </div>
+    </form>
+
+<!-- antes -->
+<!-- <input type="checkbox" class="checkbox" id="switch-mode" hidden
+           (change)="setDark(($event.target as HTMLInputElement).checked)" /> -->
+
+<!-- después -->
+<input
+  type="checkbox"
+  class="checkbox"
+  id="switch-mode"
+  hidden
+  #switchMode
+  (change)="setDark(switchMode.checked)"
+/>
+  <label class="swith-lm" for="switch-mode">
+      <i class="bx bxs-moon"></i>
+      <i class="bx bx-sun"></i>
+      <div class="ball"></div>
+    </label>
+
+    <!-- Profile -->
+    <a href="#" class="profile" (click)="toggleProfile($event)" #profileBtn>
+      <img src="https://placehold.co/600x400/png" alt="Profile" />
+    </a>
+    <div class="profile-menu" [class.show]="profileShow" #profileMenu>
+      <ul>
+        <li><a href="#">Mi pefil</a></li>
+        <li><a href="#">Configuracion</a></li>
+        <li><a href="#">Salir</a></li>
+      </ul>
+    </div>
+  </nav>
+  <!-- /NAVBAR -->
+
+  <!-- MAIN -->
+  <main>
+    <div class="head-title">
+      <div class="left">
+        <h1>Bienvenido Bruce! 👋</h1>
+        <ul class="breadcrumb">
+          <li><a href="#">EasyPark</a></li>
+          <li><i class="bx bx-chevron-right"></i></li>
+          <li><a class="active" href="#">Inicio</a></li>
+        </ul>
+      </div>
+      <a href="" class="btn-download" target="_blink">
+        <i class="bx bx-plus bx-fade-down-hover"></i>
+        <span class="text">Agregar vehiculo </span>
+      </a>
+    </div>
+
+    <ul class="box-info">
+      <li>
+        <i class="bx bx-wallet-alt"></i>
+        <span class="text">
+          <h3>Q350.00</h3>
+          <p>Total</p>
+        </span>
+      </li>
+      <li>
+        <i class="bx bxs-car"></i>
+        <span class="text">
+          <h3>10</h3>
+          <p>Vehiculos Registrados</p>
+        </span>
+      </li>
+      <li>
+        <i class="bx bx-siren"></i>
+        <span class="text">
+          <h3>28</h3>
+          <p>Multas</p>
+        </span>
+      </li>
+    </ul>
+
+    <div class="table-data">
+      <div class="order">
+        <div class="head">
+          <h3>Parqueo actual</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Vehiculo</th>
+              <th>Ubicacion</th>
+              <th>Precio</th>
+              <th>Tipo</th>
+              <th>Estatus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><img src="https://placehold.co/600x400/png" /><p>Honda Civic 2025</p></td>
+              <td>B2</td><td>Q323</td><td>Diario</td>
+              <td><span class="status completed">Activo</span></td>
+            </tr>
+            <tr>
+              <td><img src="https://placehold.co/600x400/png" /><p>BMW 2025</p></td>
+              <td>C2</td><td>Q100</td><td>Diario</td>
+              <td><span class="status pending">Caducado</span></td>
+            </tr>
+            <tr>
+              <td><img src="https://placehold.co/600x400/png" /><p>Toyota 2025</p></td>
+              <td>B1</td><td>Q100</td><td>Diario</td>
+              <td><span class="status process">A Caducar</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+     
+    </div>
+  </main>
+  <!-- /MAIN -->
+</section>
+<!-- /CONTENT -->
+
+

@@ -18,7 +18,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrls: ['./login.css'],
 })
 export class LoginComponent {
-  // UI: panel derecho (true = Crear cuenta, false = Iniciar sesión)
   rightPanel = signal<boolean>(true);
 
   // Stepper
@@ -34,7 +33,6 @@ export class LoginComponent {
   strength = signal<'weak' | 'ok' | 'strong' | ''>('');
 
   constructor(private fb: FormBuilder, private destroyRef: DestroyRef) {
-    // === Inicialización AQUÍ (evita el error de TS) ===
     this.signupForm = this.fb.group(
       {
         dpi: ['', [Validators.required]],
@@ -58,7 +56,6 @@ export class LoginComponent {
       password: ['', [Validators.required]],
     });
 
-  // 🔧 Suscripción reactiva al password (en vez de effect)
   const passCtrl = this.signupForm.get('password')!;
   const confCtrl = this.signupForm.get('confirm')!;
 
@@ -66,12 +63,10 @@ export class LoginComponent {
     .pipe(startWith(passCtrl.value ?? ''), takeUntilDestroyed(this.destroyRef))
     .subscribe((v) => {
       this.updateStrength((v as string) || '');
-      // Revalida confirm para ocultar/mostrar el error al volar
       confCtrl.updateValueAndValidity({ onlySelf: true, emitEvent: false });
     });
   }
 
-  // === Navegación de pasos ===
   back() {
     if (this.current() > 0) this.current.set(this.current() - 1);
   }
@@ -90,8 +85,8 @@ export class LoginComponent {
     if (step === 1) ['email', 'telefono'].forEach(n => markTouched(get(n)));
     if (step === 2) ['password', 'confirm'].forEach(n => markTouched(get(n)));
     if (step === 3) {
-      // Si quieres exigir archivo, descomenta:
-      // markTouched(get('licencia'));
+      // exigir archivo
+       markTouched(get('licencia'));
     }
 
     this.signupForm.updateValueAndValidity({ onlySelf: false, emitEvent: false });
@@ -100,7 +95,7 @@ export class LoginComponent {
       0: ['dpi', 'nombre', 'apellido', 'genero'],
       1: ['email', 'telefono'],
       2: ['password', 'confirm'],
-      3: [], // agrega 'licencia' si decides que sea obligatoria
+      3: ['licencia'], 
     };
     const names = stepControls[step] ?? [];
     return names.every(n => this.signupForm.get(n)?.valid);
@@ -145,7 +140,7 @@ export class LoginComponent {
     else this.strength.set('strong');
   }
 
-  // === Validador de confirmación ===
+  //  Validador de confirmación
   private passwordsIguales() {
     return (ctrl: AbstractControl) => {
       const pass = ctrl.get('password')?.value ?? '';
@@ -154,7 +149,7 @@ export class LoginComponent {
     };
   }
 
-  // === Helpers de UI ===
+  //  Helpers de UI
   setRightPanel(v: boolean) {
     this.rightPanel.set(v);
   }
@@ -167,7 +162,7 @@ export class LoginComponent {
     return !!(this.signupForm.errors && this.signupForm.errors[key]);
   }
 
-  // === Dropzone / archivo ===
+  //  Dropzone / archivo 
   onDropzoneClick(fileInput: HTMLInputElement) {
     fileInput.click();
   }
@@ -202,7 +197,7 @@ export class LoginComponent {
     this.signupForm.patchValue({ licencia: file });
   }
 
-  // Textos resumen (si los usas en el paso final)
+
   getNombreCompleto() {
     const n = (this.signupForm.get('nombre')?.value ?? '—').toString();
     const a = (this.signupForm.get('apellido')?.value ?? '').toString();
