@@ -113,6 +113,18 @@ function vehiculosParqueados(table, where) {
     });
 }
 
+function vehiculosCount(table, where) {
+    return new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT COUNT(*) AS count
+            FROM ${table}
+            WHERE usuario = '${where.usuario}';`, (error, result) => {
+            if (error) return reject(error);
+            resolve(result[0].count);
+        });
+    });
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -120,5 +132,6 @@ module.exports ={
     updateRecord,
     removeRecord,
     totalInvertido,
-    vehiculosParqueados
+    vehiculosParqueados,
+    vehiculosCount
 }
