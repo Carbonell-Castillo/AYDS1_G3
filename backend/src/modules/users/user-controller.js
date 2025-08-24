@@ -14,8 +14,16 @@ function getTotalInvertido(dpi) {
     });
 }
 
+function getVehiculosParqueados(dpi) {
+    return db.selectRecord('usuario', { usuario: dpi })
+    .then((user) => {
+        if (!user) throw new Error('User not found');
+        return db.vehiculosParqueados('vehiculo', { usuario: user.usuario });
+    });
+}
+
 module.exports = {
     getUsers,
-    getTotalInvertido
-
+    getTotalInvertido,
+    getVehiculosParqueados
 };
