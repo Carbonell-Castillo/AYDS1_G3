@@ -125,6 +125,25 @@ function vehiculosCount(table, where) {
     });
 }
 
+function getVehiculos(table, where) {
+    return new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT
+                v.placa,
+                tv.nombre AS tipo,
+                v.marca
+            FROM vehiculo v
+                    INNER JOIN tipo_vehiculo tv
+                                ON v.tipo_vehiculo_id = tv.tipo_vehiculo_id
+                    INNER JOIN usuario_vehiculo uv
+                                ON v.placa = uv.placa_vehiculo
+            WHERE uv.usuario = '${where.usuario}';`, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        });
+    });
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -133,5 +152,6 @@ module.exports ={
     removeRecord,
     totalInvertido,
     vehiculosParqueados,
-    vehiculosCount
+    vehiculosCount,
+    getVehiculos
 }
