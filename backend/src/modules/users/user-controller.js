@@ -16,14 +16,31 @@ function getTotalInvertido(dpi) {
 
 function getVehiculosParqueados(dpi) {
     return db.selectRecord('usuario', { usuario: dpi })
-    .then((user) => {
+    .then(async (user) => {
         if (!user) throw new Error('User not found');
-        return db.vehiculosParqueados('vehiculo', { usuario: user.usuario });
+        const vehiculosParqueados = await db.vehiculosParqueados('vehiculo', { usuario: user.usuario });
+        return {
+            "dpi": user.usuario,
+            "vehiculosParqueados": vehiculosParqueados
+        }
+    });
+}
+
+function getVehiculosCount(dpi) {
+    return db.selectRecord('usuario', { usuario: dpi })
+    .then(async (user) => {
+        if (!user) throw new Error('User not found');
+        const totalVehiculos = await db.vehiculosCount('usuario_vehiculo', { usuario: user.usuario });
+        return {
+            "dpi": user.usuario,
+            "totalVehiculos": totalVehiculos
+        }
     });
 }
 
 module.exports = {
     getUsers,
     getTotalInvertido,
-    getVehiculosParqueados
+    getVehiculosParqueados,
+    getVehiculosCount
 };
