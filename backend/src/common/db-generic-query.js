@@ -93,11 +93,32 @@ async function totalInvertido(table, where) {
     };
 }
 
+function vehiculosParqueados(table, where) {
+    return new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT
+                v.placa,
+                v.modelo,
+                esp.etiqueta AS ubicacion
+            FROM vehiculo v
+                    INNER JOIN usuario_vehiculo uv
+                                ON v.placa = uv.placa_vehiculo
+                    INNER JOIN espacio esp
+                    INNER JOIN ingreso i
+                                ON esp.id_espacio = i.id_espacio
+            WHERE uv.usuario = '${where.usuario}' AND esp.ocupado = 1;`, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        });
+    });
+}
+
 module.exports ={
     selectAll,
     selectRecord,
     insertRecord,
     updateRecord,
     removeRecord,
-    totalInvertido
+    totalInvertido,
+    vehiculosParqueados
 }
