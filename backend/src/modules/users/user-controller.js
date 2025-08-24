@@ -38,9 +38,21 @@ function getVehiculosCount(dpi) {
     });
 }
 
+function getVehiculos(dpi) {
+    return db.selectRecord('usuario', { usuario: dpi })
+    .then(async (user) => {
+        if (!user) throw new Error('User not found');
+        const vehiculos = await db.selectAll('vehiculo', { usuario: user.usuario });
+        return {
+            "vehiculos": vehiculos
+        }
+    });
+}
+
 module.exports = {
     getUsers,
     getTotalInvertido,
     getVehiculosParqueados,
-    getVehiculosCount
+    getVehiculosCount,
+    getVehiculos
 };
