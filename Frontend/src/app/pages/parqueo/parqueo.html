@@ -1,0 +1,161 @@
+<div class="head-title">
+  <div class="left">
+    <h1>Selecciona tu parqueo</h1>
+    <ul class="breadcrumb">
+      <li><a>EasyPark</a></li>
+      <li><i class="bx bx-chevron-right"></i></li>
+      <li><a class="active">Parqueo</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="page">
+  <!-- Header -->
+  <section class="section-header card">
+    <div class="header-left">
+      <h1 class="title">Parqueo Miraflores</h1>
+      <p class="subtitle">Selecciona el espacio para tu auto y moto, luego confirma.</p>
+    </div>
+
+    <div class="header-stats">
+      <div class="kpi">
+        <span class="kpi-label">Autos ocupados</span>
+        <strong class="kpi-value">{{ carsFilled }}</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Autos seleccionados</span>
+        <strong class="kpi-value">{{ carsSelected }}</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Autos vacíos</span>
+        <strong class="kpi-value">{{ carsEmpty }}</strong>
+      </div>
+      <div class="kpi alt">
+        <span class="kpi-label">Motos ocupadas</span>
+        <strong class="kpi-value">{{ motosFilled }}</strong>
+      </div>
+      <div class="kpi alt">
+        <span class="kpi-label">Motos seleccionadas</span>
+        <strong class="kpi-value">{{ motosSelected }}</strong>
+      </div>
+      <div class="kpi alt">
+        <span class="kpi-label">Motos vacías</span>
+        <strong class="kpi-value">{{ motosEmpty }}</strong>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn ghost" (click)="clearAll()" id="btn-clear">Limpiar</button>
+      <button class="btn primary" (click)="confirmAll()" id="btn-confirm">Confirmar</button>
+    </div>
+  </section>
+
+  <!-- AUTOS -->
+  <main class="lot card" role="grid" aria-label="Mapa de parqueo (autos)">
+    <section
+      class="bays"
+      id="car-bays"
+      [style.--bay-count]="'' + config.carBays"
+    >
+      <div class="bay" *ngFor="let bay of carBays; let b = index" [style.--bay-index]="'' + b">
+        <div class="bay-line top"></div>
+
+        <div class="bay-rows">
+          <div class="row" *ngFor="let row of bay.rows">
+            <!-- LEFT -->
+            <button
+              *ngIf="row.left as s"
+              class="slot left ripple"
+              [class.selected]="s.selected"
+              [class.occupied]="s.occupied"
+              [disabled]="s.occupied"
+              (click)="toggleCar(s, $event)"
+            >
+              <span class="code">{{ s.label }}</span>
+              <span class="car-svg"
+                    [ngClass]="carColor(s.id)"
+                    [class.visible]="s.selected || s.occupied"></span>
+            </button>
+
+            <div class="divider"></div>
+
+            <!-- RIGHT -->
+            <button
+              *ngIf="row.right as s"
+              class="slot right ripple"
+              [class.selected]="s.selected"
+              [class.occupied]="s.occupied"
+              [disabled]="s.occupied"
+              (click)="toggleCar(s, $event)"
+            >
+              <span class="code">{{ s.label }}</span>
+              <span class="car-svg"
+                    [ngClass]="carColor(s.id)"
+                    [class.visible]="s.selected || s.occupied"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bay-line bottom"></div>
+      <div class="bay-tag">Area {{ toLetter(b) }}</div>
+      </div>
+    </section>
+
+    <div class="edge-tag entry">Entry</div>
+    <div class="edge-tag exit">Exit</div>
+  </main>
+
+  <!-- MOTOS -->
+  <section class="moto-section card">
+    <header class="moto-head">
+      <h2>Motocicletas</h2>
+      <div class="moto-stats">
+        <span class="badge">seleccionadas: <span id="moto-sel">{{ motosSelected }}</span></span>
+        <span class="badge alt">vacías: <span id="moto-empty">{{ motosEmpty }}</span></span>
+      </div>
+    </header>
+
+    <div class="moto-lot">
+      <div class="moto-bays" id="moto-bays" [style.--moto-bay-count]="'' + config.motoBays">
+        <div class="moto-bay" *ngFor="let bay of motoBays; let b = index" [style.--bay-index]="'' + b">
+          <div class="moto-line top"></div>
+
+          <div class="moto-rows">
+            <div class="moto-row" *ngFor="let row of bay.rows">
+              <!-- LEFT -->
+              <button
+                *ngIf="row.left as s"
+                class="moto-slot left ripple"
+                [class.selected]="s.selected"
+                [class.occupied]="s.occupied"
+                [disabled]="s.occupied"
+                (click)="toggleMoto(s, $event)"
+              >
+                <span class="code">{{ s.label }}</span>
+                <span class="moto-svg" [class.visible]="s.selected || s.occupied"></span>
+              </button>
+
+              <div class="moto-divider"></div>
+
+              <!-- RIGHT -->
+              <button
+                *ngIf="row.right as s"
+                class="moto-slot right ripple"
+                [class.selected]="s.selected"
+                [class.occupied]="s.occupied"
+                [disabled]="s.occupied"
+                (click)="toggleMoto(s, $event)"
+              >
+                <span class="code">{{ s.label }}</span>
+                <span class="moto-svg" [class.visible]="s.selected || s.occupied"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="moto-line bottom"></div>
+          <div class="moto-tag">Parqueo {{ b + 1 }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
