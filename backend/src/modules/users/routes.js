@@ -21,6 +21,19 @@ router.post("/auth/login",function (req,res){
     })
 });
 
+router.post('/', (req, res) => {
+    const body = req.body;
+
+    controller.createUser(body)
+        .then((result) => {
+            generiResponse.success(req, res, result, 200);
+        })
+        .catch((error) => {
+            console.log(error);
+            generiResponse.error(req, res, error, 500);
+        });
+});
+
 
 
 router.get("/:dpi/total-invertido", function (req, res) {
