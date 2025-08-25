@@ -282,6 +282,30 @@ async function asignarParqueoUsuario(usuario, idParqueo) {
     }
 }
 
+async function obtenerEspaciosDisponibles() {
+    try {
+        const espaciosDisponibles = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT
+                    e.id_parqueo AS idParqueo,
+                    p.nombre AS nombre,
+                    COUNT(*) AS espaciosDisponibles
+                FROM espacio e
+                INNER JOIN parqueo p ON e.id_parqueo = p.id_parqueo
+                WHERE ocupado = 0
+                GROUP BY e.id_parqueo, p.nombre;`, (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                });
+        });
+        return {
+            parqueosDisponibles: espaciosDisponibles
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -296,5 +320,6 @@ module.exports ={
     asignarParqueoAutomatico,
     createUser,
     asignarParqueoManual,
-    asignarParqueoUsuario
+    asignarParqueoUsuario,
+    obtenerEspaciosDisponibles
 }
