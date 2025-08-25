@@ -30,6 +30,14 @@ export const routes: Routes = [
         path: 'agregarVehiculos',
         loadComponent: () => import('./pages/agregar-vehiculos/agregar-vehiculos').then(m => m.AgregarVehiculos),
       },
+      {
+        path: 'agregarMultas',
+        loadComponent: () => import('./pages/agregar-multa/agregar-multa').then(m => m.AgregarMultaComponent),
+      },
+      {
+        path: 'reportes',
+        loadComponent: () => import('./pages/reportes/reportes').then(m => m.Reportes),
+      }
     ],
   },
   { path: '', pathMatch: 'full', redirectTo: 'app' },

@@ -913,16 +913,6 @@ body.dark .content nav .profile-menu li a {
 	object-fit: contain;
 }
 
-:root {
-  --dark: 0;
-  --transition: 0.28s;
-  --font-size: 0.9em;
-  --bg: hsl(0 0% calc((100 - (var(--dark, 0) * 100)) * 1%));
-  --color: hsl(0 0% calc(var(--dark) * 100%));
-}
-
-
-
 
 @media(prefers-color-scheme: dark) {
   :root {
@@ -931,97 +921,21 @@ body.dark .content nav .profile-menu li a {
 }
 
 .actions button {
-  outline-color: hsl(0 0% calc(var(--dark) * 100%));
-  --padding: calc(var(--font-size) * 0.75);
-  cursor: pointer;
-  letter-spacing: calc(var(--font-size) * 0.02);
-  font-family: sans-serif;
-  font-weight: bold;
-  background: var(--bg);
-  font-size: var(--font-size);
-  color: var(--color);
-  position: relative;
-  transition: border-color var(--transition);
-}
-
-.actions button > span {
-  background: var(--bg);
-  padding: calc(var(--font-size) * 0.9) calc(var(--font-size) * 1.36);
-  overflow: hidden;
-  display: grid;
-  grid-template-columns:
-    calc((var(--font-size) * 1.75) * (1 - var(--hovered, 0)))
-    1fr
-    calc((var(--font-size) * 1.75) * var(--hovered, 0));
-  align-items: center;
-  transition: grid-template-columns var(--transition);
-}
-
-.actions button:after {
-  content: "";
-  position: absolute;
-  inset: calc(var(--font-size) * -0.025);
-  background: hsl(0 0% calc(var(--dark) * 100%) / 0.45);
-  filter: blur(calc(var(--font-size) * 0.75));
-  scale: var(--hovered, 0);
-  z-index: -1;
-  transition: scale var(--transition);
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	background: #007bff;
+	color: #f9f9f9;
+	cursor: pointer;
+	transition: background 0.3s;
 }
 
 .actions button:hover {
-  --hovered: 1;
+	background: #3C91E6;
 }
 
-.actions span span:nth-of-type(1) {
-  padding-right: var(--padding);
-  width: var(--font-size);
+.actions button:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px #f9f9f9;
 }
-
-.actions span span:nth-of-type(3) {
-  padding-left: var(--padding);
-  width: var(--font-size);
-}
-
-.actions img {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  z-index: -1;
-  opacity: 0.6;
-  scale: 1.3;
-}
-
-.actions svg {
-  display: inline-block;
-  transition: translate var(--transition) ease-in-out, opacity var(--transition) ease-in-out;
-}
-
-
-.actions button:is(:focus-visible, :hover) {
-  --hovered: 1;
-}
-
-.actions span span:nth-of-type(3) svg {
-  stroke-width: 3;
-  translate: calc((1 - var(--hovered, 0)) * (var(--font-size) * 3)) 8%;
-  width: calc(var(--font-size) * 1);
-  opacity: var(--hovered, 0);
-}
-
-.actions span span:nth-of-type(1) svg {
-  stroke-width: 3;
-  translate: calc(((var(--hovered, 0) * var(--font-size)) * -3) + 10%) 8%;
-  width: calc(var(--font-size) * 0.8);
-}
-
-
-
-/* Vehicles */
-
-
-
-
-/* Parking */
-
 

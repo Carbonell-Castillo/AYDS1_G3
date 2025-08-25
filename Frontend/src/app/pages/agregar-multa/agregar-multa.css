@@ -1,0 +1,195 @@
+.container-form-multa {
+    width: 45%;
+    float: left;
+}
+
+.container-form-multa .form {
+  margin-top: 20px ;
+  width: 100%;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.form-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group textarea {
+  min-height: 90px;
+  resize: vertical;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--dark-grey);
+  border-radius: 8px;
+  background: var(--light);
+}
+
+.help {
+  font-size: 12px;
+  color: var(--dark-grey);
+  margin-top: 6px;
+}
+
+/* Monto  */
+
+.uploader {
+  border: 2px solid var(--dark-grey);
+  border-radius: 12px;
+  background: var(--grey);
+  padding: 16px;
+  text-align: center;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+.uploader:hover {
+  border-color: var(--blue);
+}
+.uploader.dragover {
+  background: var(--light-blue);
+  border-color: var(--blue);
+}
+.uploader input[type="file"] {
+  display: none;
+}
+.uploader .hint {
+  color: var(--dark-grey);
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.preview-item {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--light);
+  border: 1px solid var(--grey);
+}
+.preview-item img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+.preview-item .remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cardx {
+    float: left;
+  width: 54%;
+  margin-left: 10px;
+  background: var(--light);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--grey);
+}
+.cardx .cardx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.status-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--light);
+}
+.status-pendiente {
+  background: var(--orange);
+}
+.status-anulada {
+  background: var(--red);
+}
+.status-correcta {
+  background: var(--blue);
+}
+
+/* Acciones fila */
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-sm {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-sm.primary {
+  background: var(--blue);
+  color: var(--light);
+}
+.btn-sm.warn {
+  background: var(--yellow);
+  color: #222;
+}
+.btn-sm.danger {
+  background: var(--red);
+  color: var(--light);
+}
+.btn-sm.ghost {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+}
+
+/* Botonera del form */
+.form .actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+/* Modal simple para “anular” cuando no tengas el modal global */
+.simple-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+.simple-backdrop.show {
+  display: flex;
+}
+.simple-modal {
+  width: min(420px, 92vw);
+  background: var(--light);
+  color: var(--dark);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.simple-modal .modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
