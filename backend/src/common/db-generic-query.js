@@ -258,8 +258,28 @@ async function asignarParqueoManual(usuario, placa, idParqueo, idEspacio) {
 
     } catch (error) {
         throw error;
+    }  
+}
+
+async function asignarParqueoUsuario(usuario, idParqueo) {
+    try {
+        const insertar = await insertRecord('usuario_parqueo', {
+            usuario: usuario,
+            id_parqueo: idParqueo
+        });
+
+        if (insertar) {
+            return {
+                mensaje: "Usuario asignado al parqueo correctamente",
+                usuario: usuario,
+                idParqueo: idParqueo
+            };
+        } else {
+            throw new Error("No se pudo asignar el usuario al parqueo");
+        }
+    } catch (error) {
+        throw error;
     }
-    
 }
 
 module.exports ={
@@ -275,5 +295,6 @@ module.exports ={
     validateUser,
     asignarParqueoAutomatico,
     createUser,
-    asignarParqueoManual
+    asignarParqueoManual,
+    asignarParqueoUsuario
 }
