@@ -46,8 +46,19 @@ const asignarParqueoUsuario = async(body) => {
     }
 };
 
+const obtenerEspaciosDisponibles = async () => {
+    try {
+        const result = await db.obtenerEspaciosDisponibles();
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 module.exports = {
     asignarParqueoAutomatico,
     asignarParqueoManual,
-    asignarParqueoUsuario
+    asignarParqueoUsuario,
+    obtenerEspaciosDisponibles
 };
