@@ -42,8 +42,7 @@ body.dark {
 }
 
 body {
-    margin: 0;
-	background-color: var(--grey);
+	background: var(--grey);
 	overflow-x: hidden;
 }
 
@@ -184,8 +183,8 @@ body {
 /* CONTENT */
 .content {
 	position: relative;
-	width: calc(100% - 210px);
-	left: 210px;
+	width: calc(100% - 220px);
+	left: 220px;
 	transition: .3s ease;
 }
 .sidebar.hide ~ .content {
@@ -467,8 +466,7 @@ body.dark .content nav .profile-menu li a {
 	width: 100%;
 	padding: 36px 24px;
 	font-family: var(--poppins);
-	max-height: calc(100vh - 56px);
-	overflow-y: auto;
+
 }
 .content main .head-title {
 	display: flex;
@@ -915,7 +913,7 @@ body.dark .content nav .profile-menu li a {
 	object-fit: contain;
 }
 
-:host {
+:root {
   --dark: 0;
   --transition: 0.28s;
   --font-size: 0.9em;
@@ -927,7 +925,7 @@ body.dark .content nav .profile-menu li a {
 
 
 @media(prefers-color-scheme: dark) {
-  :host {
+  :root {
     --dark: 1;
   }
 }
@@ -1021,120 +1019,9 @@ body.dark .content nav .profile-menu li a {
 
 /* Vehicles */
 
-.container-vehicles{
-	display: flex;
-
-	margin-top: 24px;
-	width: 100%;
-	color: var(--dark);
-	height: 100vh;
-}
-
-
-@import url("https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap");
-* {
-  margin: 0;
-  padding: 0;
-  font-family: "Istok Web", sans-serif;
-}
-
-
-.card {
-	margin: 10px;
-  position: relative;
-    width: 250px;
-    height: 400px;
-  background: #191919;
-  border-radius: 20px;
-  overflow: hidden;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  width: 100%;
-  height: 100%;
-  background: #ffce00;
-  transform: skewY(345deg);
-  transition: 0.5s;
-}
-
-.card:hover::before {
-  top: -70%;
-  transform: skewY(390deg);
-}
 
 
 
-.card .imgBox {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 20px;
-  z-index: 1;
-}
+/* Parking */
 
-/*
-.card .imgBox img {
-    max-width: 100%;
 
-    transition: .5s;
-}
-
-.card:hover .imgBox img {
-    max-width: 50%;
-
-}
-*/
-.card .contentBox {
-  position: relative;
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 2;
-}
-
-.card .contentBox h3 {
-  font-size: 18px;
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.card .contentBox .price {
-  font-size: 24px;
-  color: white;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.card .contentBox .buy {
-  position: relative;
-  top: 100px;
-  opacity: 0;
-  padding: 10px 30px;
-  margin-top: 15px;
-  color: #000000;
-  text-decoration: none;
-  background: #ffce00;
-  border-radius: 30px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: 0.5s;
-}
-
-.card:hover .contentBox .buy {
-  top: 0;
-  opacity: 1;
-}
-
-.mouse {
-  height: 250px;
-  width: auto;
-}
