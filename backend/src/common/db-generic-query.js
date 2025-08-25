@@ -46,13 +46,19 @@ function selectAll(table){
 
 function validateUser(usuario,password){
     return new Promise( (resolve,reject) => {
-        let q =`SELECT COUNT(usuario) as exist FROM usuario where usuario ='${usuario}' and password='${password}'`;
+        let q =`SELECT COUNT(usuario) as exist FROM usuario where (usuario ='${usuario}' or dpi ='${usuario}' or correo_electronico ='${usuario}') and password='${password}'`;
         console.log(q);
         connection.query(q,(error,result) => {
             if(error) return reject(error);
             resolve(result);
         })
     });
+}
+
+async function createUser(table,record)
+{
+
+    return insertRecord(table,record);
 }
 
 
@@ -220,5 +226,6 @@ module.exports ={
     vehiculosCount,
     getVehiculos,
     validateUser,
-    asignarParqueoAutomatico
+    asignarParqueoAutomatico,
+    createUser
 }
