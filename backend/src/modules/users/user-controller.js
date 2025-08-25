@@ -6,6 +6,13 @@ function getUsers()
 
 }
 
+function validateUser(usuario,password)
+{
+    return db.validateUser(usuario,password);
+
+}
+
+
 function getTotalInvertido(dpi) {
     return db.selectRecord('usuario', { usuario: dpi })
     .then((user) => {
@@ -54,5 +61,6 @@ module.exports = {
     getTotalInvertido,
     getVehiculosParqueados,
     getVehiculosCount,
-    getVehiculos
+    getVehiculos,
+    validateUser
 };

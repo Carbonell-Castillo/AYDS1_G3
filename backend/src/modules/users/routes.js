@@ -11,6 +11,18 @@ router.get("/",function (req,res){
     })
 });
 
+router.post("/auth/login",function (req,res){
+    let usuario = req.body.dpi ? req.body.dpi:req.body.email;
+    console.log(req.body);
+    console.log(usuario);
+    const usersList = controller.validateUser(usuario,req.body.password)
+    .then((records) => {
+        generiResponse.success(req,res, records,200);
+    })
+});
+
+
+
 router.get("/:dpi/total-invertido", function (req, res) {
     const dpi = req.params.dpi;
 

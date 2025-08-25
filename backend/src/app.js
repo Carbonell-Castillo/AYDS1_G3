@@ -5,6 +5,7 @@ const users = require("./modules/users/routes.js");
 const parqueo = require("./modules/parqueo/routes.js");
 
 const app = express();
+app.use(express.json());
 
 app.set("port", config.appConfig.port);
 app.use(express.json());

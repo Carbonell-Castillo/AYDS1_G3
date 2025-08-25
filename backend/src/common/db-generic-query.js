@@ -44,6 +44,19 @@ function selectAll(table){
     });
 }
 
+function validateUser(usuario,password){
+    return new Promise( (resolve,reject) => {
+        let q =`SELECT COUNT(usuario) as exist FROM usuario where usuario ='${usuario}' and password='${password}'`;
+        console.log(q);
+        connection.query(q,(error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
+}
+
+
+
 function selectRecord(table, where){
     return new Promise( (resolve,reject) => {
         connection.query(`SELECT * FROM ${table} WHERE ?`, where, (error,result) => {
@@ -206,5 +219,6 @@ module.exports ={
     vehiculosParqueados,
     vehiculosCount,
     getVehiculos,
+    validateUser,
     asignarParqueoAutomatico
 }
