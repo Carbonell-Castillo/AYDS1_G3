@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const config = require('../config');
-
+const utilities = require('../utilities/utils');
 
 const dbConfig = {
     host: config.mysqlConfig.host,
@@ -54,7 +54,12 @@ function selectRecord(table, where){
 }
 
 function insertRecord(table,record){
-
+    return new Promise( (resolve,reject) => {
+        connection.query(`INSERT INTO ${table} SET ?`, [record], (error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
 }
 
 function updateRecord(table,record){
@@ -144,6 +149,53 @@ function getVehiculos(table, where) {
     });
 }
 
+async function asignarParqueoAutomatico(usuario, placa) {
+    try {
+        const parqueosLibres = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT id_espacio, id_parqueo
+                FROM espacio
+                WHERE ocupado = 0
+                LIMIT 1;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+        
+        if (parqueosLibres.length === 0) {
+            throw new Error("No hay espacios de parqueo disponibles");
+        }
+
+        const fecha_hora_ingreso = utilities.formatDate(new Date());
+        insertRecord('ingreso', {
+            id_parqueo: parqueosLibres[0].id_parqueo,
+            id_espacio: parqueosLibres[0].id_espacio,
+            usuario: usuario,
+            placa: placa,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        });
+
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                UPDATE espacio
+                SET ocupado = 1
+                WHERE id_espacio = ${parqueosLibres[0].id_espacio};`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        return {
+            id_parqueo: parqueosLibres[0].id_parqueo,
+            id_espacio: parqueosLibres[0].id_espacio,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        }
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -153,5 +205,6 @@ module.exports ={
     totalInvertido,
     vehiculosParqueados,
     vehiculosCount,
-    getVehiculos
+    getVehiculos,
+    asignarParqueoAutomatico
 }
