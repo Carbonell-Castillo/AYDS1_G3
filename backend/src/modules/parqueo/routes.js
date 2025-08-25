@@ -42,4 +42,15 @@ router.post('/asignar-usuario', (req, res) => {
        });
 });
 
+router.get('/disponibles', (req, res) => {
+    controller.obtenerEspaciosDisponibles()
+        .then((result) => {
+            genericResponse.success(req, res, result, 200);
+        })
+        .catch((error) => {
+            console.log(error);
+            genericResponse.error(req, res, error, 500);
+        });
+});
+
 module.exports = router;
