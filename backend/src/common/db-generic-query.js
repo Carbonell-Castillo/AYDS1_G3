@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const config = require('../config');
-
+const utilities = require('../utilities/utils');
 
 const dbConfig = {
     host: config.mysqlConfig.host,
@@ -44,6 +44,25 @@ function selectAll(table){
     });
 }
 
+function validateUser(usuario,password){
+    return new Promise( (resolve,reject) => {
+        let q =`SELECT COUNT(usuario) as exist FROM usuario where (usuario ='${usuario}' or dpi ='${usuario}' or correo_electronico ='${usuario}') and password='${password}'`;
+        console.log(q);
+        connection.query(q,(error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
+}
+
+async function createUser(table,record)
+{
+
+    return insertRecord(table,record);
+}
+
+
+
 function selectRecord(table, where){
     return new Promise( (resolve,reject) => {
         connection.query(`SELECT * FROM ${table} WHERE ?`, where, (error,result) => {
@@ -54,7 +73,12 @@ function selectRecord(table, where){
 }
 
 function insertRecord(table,record){
-
+    return new Promise( (resolve,reject) => {
+        connection.query(`INSERT INTO ${table} SET ?`, [record], (error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
 }
 
 function updateRecord(table,record){
@@ -144,6 +168,144 @@ function getVehiculos(table, where) {
     });
 }
 
+async function asignarParqueoAutomatico(usuario, placa) {
+    try {
+        const parqueosLibres = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT id_espacio, id_parqueo
+                FROM espacio
+                WHERE ocupado = 0
+                LIMIT 1;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+        
+        if (parqueosLibres.length === 0) {
+            throw new Error("No hay espacios de parqueo disponibles");
+        }
+
+        const fecha_hora_ingreso = utilities.formatDate(new Date());
+        insertRecord('ingreso', {
+            id_parqueo: parqueosLibres[0].id_parqueo,
+            id_espacio: parqueosLibres[0].id_espacio,
+            usuario: usuario,
+            placa: placa,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        });
+
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                UPDATE espacio
+                SET ocupado = 1
+                WHERE id_espacio = ${parqueosLibres[0].id_espacio};`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        return {
+            id_parqueo: parqueosLibres[0].id_parqueo,
+            id_espacio: parqueosLibres[0].id_espacio,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        }
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function asignarParqueoManual(usuario, placa, idParqueo, idEspacio) {
+    try {
+        const espacio = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT id_espacio, id_parqueo
+                FROM espacio
+                WHERE id_espacio = ${idEspacio} AND ocupado = 0;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+        
+        if (espacio.length === 0) {
+            throw new Error("El espacio de parqueo no está disponible");
+        }
+
+        const fecha_hora_ingreso = utilities.formatDate(new Date());
+        insertRecord('ingreso', {
+            id_parqueo: idParqueo,
+            id_espacio: idEspacio,
+            usuario: usuario,
+            placa: placa,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        });
+
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                UPDATE espacio
+                SET ocupado = 1
+                WHERE id_espacio = ${idEspacio};`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        return {
+            id_parqueo: idParqueo,
+            id_espacio: idEspacio,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        }
+
+    } catch (error) {
+        throw error;
+    }  
+}
+
+async function asignarParqueoUsuario(usuario, idParqueo) {
+    try {
+        const insertar = await insertRecord('usuario_parqueo', {
+            usuario: usuario,
+            id_parqueo: idParqueo
+        });
+
+        if (insertar) {
+            return {
+                mensaje: "Usuario asignado al parqueo correctamente",
+                usuario: usuario,
+                idParqueo: idParqueo
+            };
+        } else {
+            throw new Error("No se pudo asignar el usuario al parqueo");
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function obtenerEspaciosDisponibles() {
+    try {
+        const espaciosDisponibles = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT
+                    e.id_parqueo AS idParqueo,
+                    p.nombre AS nombre,
+                    COUNT(*) AS espaciosDisponibles
+                FROM espacio e
+                INNER JOIN parqueo p ON e.id_parqueo = p.id_parqueo
+                WHERE ocupado = 0
+                GROUP BY e.id_parqueo, p.nombre;`, (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                });
+        });
+        return {
+            parqueosDisponibles: espaciosDisponibles
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -153,5 +315,11 @@ module.exports ={
     totalInvertido,
     vehiculosParqueados,
     vehiculosCount,
-    getVehiculos
+    getVehiculos,
+    validateUser,
+    asignarParqueoAutomatico,
+    createUser,
+    asignarParqueoManual,
+    asignarParqueoUsuario,
+    obtenerEspaciosDisponibles
 }
