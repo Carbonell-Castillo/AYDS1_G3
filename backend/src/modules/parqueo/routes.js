@@ -16,4 +16,17 @@ router.post('/asignar-automatico', (req, res) => {
         });
 });
 
+router.post('/asignar', (req, res) => {
+    const body = req.body;
+
+    controller.asignarParqueoManual(body)
+        .then((result) => {
+            genericResponse.success(req, res, result, 200);
+        })
+        .catch((error) => {
+            console.log(error);
+            genericResponse.error(req, res, error, 500);
+        });
+});
+
 module.exports = router;
