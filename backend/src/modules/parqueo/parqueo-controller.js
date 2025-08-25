@@ -17,6 +17,24 @@ const asignarParqueoAutomatico = async (body) => {
     }
 };
 
+const asignarParqueoManual = async (body) => {
+    const { usuario, placa, idParqueo, idEspacio } = body;
+
+    try {
+        const result = await db.asignarParqueoManual(usuario, placa, idParqueo, idEspacio);
+        return {
+            mensaje: "Parqueado exitosamente",
+            idParqueo: result.id_parqueo,
+            idEspacio: result.id_espacio,
+            fechaIngresoHora: result.fecha_hora_ingreso
+        };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 module.exports = {
-    asignarParqueoAutomatico
+    asignarParqueoAutomatico,
+    asignarParqueoManual
 };

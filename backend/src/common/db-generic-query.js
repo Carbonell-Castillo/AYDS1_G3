@@ -215,6 +215,53 @@ async function asignarParqueoAutomatico(usuario, placa) {
     }
 }
 
+async function asignarParqueoManual(usuario, placa, idParqueo, idEspacio) {
+    try {
+        const espacio = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT id_espacio, id_parqueo
+                FROM espacio
+                WHERE id_espacio = ${idEspacio} AND ocupado = 0;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+        
+        if (espacio.length === 0) {
+            throw new Error("El espacio de parqueo no está disponible");
+        }
+
+        const fecha_hora_ingreso = utilities.formatDate(new Date());
+        insertRecord('ingreso', {
+            id_parqueo: idParqueo,
+            id_espacio: idEspacio,
+            usuario: usuario,
+            placa: placa,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        });
+
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                UPDATE espacio
+                SET ocupado = 1
+                WHERE id_espacio = ${idEspacio};`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        return {
+            id_parqueo: idParqueo,
+            id_espacio: idEspacio,
+            fecha_hora_ingreso: fecha_hora_ingreso
+        }
+
+    } catch (error) {
+        throw error;
+    }
+    
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -227,5 +274,6 @@ module.exports ={
     getVehiculos,
     validateUser,
     asignarParqueoAutomatico,
-    createUser
+    createUser,
+    asignarParqueoManual
 }
