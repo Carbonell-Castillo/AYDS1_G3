@@ -1,0 +1,208 @@
+<main class="reports">
+  <div class="head-title">
+    <div class="left">
+      <h1>Reportes de administrador</h1>
+      <ul class="breadcrumb">
+        <li><a>EasyPark</a></li>
+        <li><i class="bx bx-chevron-right"></i></li>
+        <li><a class="active">Reportes</a></li>
+      </ul>
+    </div>
+    <a href="#" class="btn-download" (click)="exportPDF($event)">
+      <i class="bx bxs-file-pdf"></i>
+      <span class="text">Exportar PDF</span>
+    </a>
+  </div>
+
+  <!-- KPIs -->
+  <ul class="box-info kpis">
+    <li>
+      <i class="bx bx-wallet-alt"></i>
+      <div class="text">
+        <h3>{{ kpiRecaudo }}</h3>
+        <p>Recaudo mensual</p>
+      </div>
+    </li>
+    <li>
+      <i class="bx bxs-car"></i>
+      <div class="text">
+        <h3>{{ kpiOcupacion }}</h3>
+        <p>Ocupación promedio</p>
+      </div>
+    </li>
+    <li>
+      <i class="bx bx-siren"></i>
+      <div class="text">
+        <h3>{{ kpiMultas }}</h3>
+        <p>Multas del mes</p>
+      </div>
+    </li>
+  </ul>
+
+  <div class="table-data">
+    <!-- 1) Ocupación -->
+    <div class="order card" style="min-width:340px; flex:1 1 520px;">
+      <div class="head">
+        <h3>Ocupación</h3>
+        <i class="bx bx-line-chart"></i>
+      </div>
+
+      <div class="filters">
+        <select class="select" [(ngModel)]="periodo" (change)="onPeriodoChange()">
+          <option value="diaria">Diaria</option>
+          <option value="semanal">Semanal</option>
+        </select>
+        <input class="input" type="date" [(ngModel)]="fechaInicio" />
+        <button class="btn" (click)="onAplicarChart()">Aplicar</button>
+      </div>
+
+      <canvas #occChartCanvas height="110"></canvas>
+      <div style="margin-top:8px; font-size:12px; color:var(--dark-grey);">
+        <span class="pill blue">Ocupación (%)</span>
+      </div>
+    </div>
+
+    <!-- 2) Sanciones por vehículo -->
+    <div class="order card" style="flex:1 1 520px;">
+      <div class="head">
+        <h3>Sanciones por vehículo</h3>
+        <i class="bx bx-error"></i>
+      </div>
+
+      <div class="filters">
+        <input class="input" placeholder="Buscar por placa / motivo" [(ngModel)]="buscaSancion">
+        <select class="select" [(ngModel)]="rolSancion">
+          <option value="">Rol: Todos</option>
+          <option value="Admin">Admin</option>
+          <option value="Usuario">Usuario</option>
+        </select>
+        <input class="input" type="date" [(ngModel)]="sancionDesde">
+        <input class="input" type="date" [(ngModel)]="sancionHasta">
+      </div>
+
+      <div style="overflow:auto;">
+        <table class="table-min">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Placa</th>
+              <th>Tipo</th>
+              <th>Motivo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of sancionesFiltradas; trackBy: trackBySancion">
+              <td>{{ r.id }}</td>
+              <td>{{ r.fecha | date:'shortDate' }}</td>
+              <td>{{ r.placa }}</td>
+              <td>{{ r.tipo }}</td>
+              <td>{{ r.motivo }}</td>
+              <td>{{ r.rol }}</td>
+              <td>
+                <span class="pill"
+                      [ngClass]="{
+                        'blue': r.estado==='Pagada',
+                        'orange': r.estado==='Pendiente',
+                        'grey': r.estado!=='Pagada' && r.estado!=='Pendiente'
+                      }">
+                  {{ r.estado }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="!sancionesFiltradas.length">
+              <td colspan="7" style="text-align:center;color:var(--dark-grey);">Sin resultados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3) Ingresos y salidas -->
+    <div class="order card" style="flex:1 1 520px;">
+      <div class="head">
+        <h3>Ingresos y salidas</h3>
+        <i class="bx bx-log-in-circle"></i>
+      </div>
+
+      <div class="filters">
+        <input class="input" placeholder="Buscar por placa" [(ngModel)]="buscaMov">
+        <input class="input" type="date" [(ngModel)]="movDesde">
+        <input class="input" type="date" [(ngModel)]="movHasta">
+      </div>
+
+      <div style="overflow:auto;">
+        <table class="table-min">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha/Hora</th>
+              <th>Placa</th>
+              <th>Evento</th>
+              <th>Parqueo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of movimientosFiltrados; trackBy: trackByMov">
+              <td>{{ r.id }}</td>
+              <td>{{ r.fecha | date:'short' }}</td>
+              <td>{{ r.placa }}</td>
+              <td>
+                <span class="pill" [ngClass]="{ 'blue': r.evento==='Entrada', 'yellow': r.evento==='Salida' }">
+                  {{ r.evento }}
+                </span>
+              </td>
+              <td>{{ r.parqueo }}</td>
+            </tr>
+            <tr *ngIf="!movimientosFiltrados.length">
+              <td colspan="5" style="text-align:center;color:var(--dark-grey);">Sin resultados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4) Pagos y multas por usuario -->
+    <div class="order card" style="flex:1 1 520px;">
+      <div class="head" style="justify-content:space-between; width:100%;">
+        <h3>Pagos y multas por usuario</h3>
+        <div class="filters" style="margin:0;">
+          <input class="input" placeholder="Buscar por DPI / usuario" [(ngModel)]="buscaPago">
+          <button class="btn" title="Exportar CSV" (click)="exportCSV()">
+            <i class="bx bx-download"></i> CSV
+          </button>
+        </div>
+      </div>
+
+      <div style="overflow:auto;">
+        <table class="table-min">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>DPI</th>
+              <th>Multas</th>
+              <th>Pagadas</th>
+              <th>Pendientes</th>
+              <th>Monto Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of pagosFiltrados; trackBy: trackByPago">
+              <td>{{ r.usuario }}</td>
+              <td>{{ r.dpi }}</td>
+              <td>{{ r.multas }}</td>
+              <td>{{ r.pagadas }}</td>
+              <td>{{ r.pendientes }}</td>
+              <td>{{ ('Q ' + (r.total | number:'1.2-2')) }}</td>
+            </tr>
+            <tr *ngIf="!pagosFiltrados.length">
+              <td colspan="6" style="text-align:center;color:var(--dark-grey);">Sin resultados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>

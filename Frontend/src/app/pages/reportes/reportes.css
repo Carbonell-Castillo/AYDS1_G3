@@ -1,0 +1,95 @@
+.reports .card {
+  background: var(--light);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--grey);
+}
+.reports .card .head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.reports .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.reports .filters .input,
+.reports .filters .select {
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--grey);
+  background: var(--grey);
+  color: var(--dark);
+  padding: 0 10px;
+}
+.reports .filters .btn {
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  padding: 0 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--blue);
+  color: var(--light);
+}
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+.pill.blue {
+  background: var(--blue);
+}
+.pill.orange {
+  background: var(--orange);
+}
+.pill.yellow {
+  background: var(--yellow);
+  color: #222;
+}
+.pill.red {
+  background: var(--red);
+}
+.pill.grey {
+  background: var(--dark-grey);
+  color: #222;
+}
+.table-min {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-min th,
+.table-min td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--grey);
+  color: var(--dark);
+}
+.table-min tr:hover {
+  background: var(--grey);
+}
+.reports .kpis .bx {
+  font-size: 32px;
+}
+@media print {
+  nav,
+  .sidebar,
+  .btn-download {
+    display: none !important;
+  }
+  .content {
+    left: 0 !important;
+    width: 100% !important;
+  }
+  .card {
+    break-inside: avoid;
+  }
+}
