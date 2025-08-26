@@ -478,6 +478,21 @@ async function getOcupacion(periodo) {
     }
 }
 
+async function selectAllRecords(table, where) {
+    try {
+        const result = await new Promise((resolve, reject) => {
+            const query = `SELECT * FROM ${table} WHERE ?`;
+            connection.query(query, where, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -499,5 +514,6 @@ module.exports ={
     registrarSalida,
     penaltiesByUser,
     getUserByDpi,
-    getOcupacion
+    getOcupacion,
+    selectAllRecords
 }
