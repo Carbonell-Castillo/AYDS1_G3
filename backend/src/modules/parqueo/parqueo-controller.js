@@ -56,9 +56,22 @@ const obtenerEspaciosDisponibles = async () => {
     }
 };
 
+const registrarSalida = async (idEspacio, body) => {
+    const { usuario, placa } = body;
+
+    try {
+        const result = await db.registrarSalida(idEspacio, usuario, placa);
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 module.exports = {
     asignarParqueoAutomatico,
     asignarParqueoManual,
     asignarParqueoUsuario,
-    obtenerEspaciosDisponibles
+    obtenerEspaciosDisponibles,
+    registrarSalida
 };
