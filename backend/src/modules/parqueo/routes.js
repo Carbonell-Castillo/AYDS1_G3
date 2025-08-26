@@ -53,4 +53,18 @@ router.get('/disponibles', (req, res) => {
         });
 });
 
+router.post('/:id/salida', (req, res) => {
+    const id = req.params.id;
+    const body = req.body;
+
+    controller.registrarSalida(id, body)
+        .then((result) => {
+            genericResponse.success(req, res, result, 200);
+        })
+        .catch((error) => {
+            console.log(error);
+            genericResponse.error(req, res, error, 500);
+        });
+})
+
 module.exports = router;

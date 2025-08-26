@@ -346,6 +346,94 @@ async function obtenerEspaciosDisponibles() {
     }
 }
 
+async function registrarPago(ingreso) {
+    try {
+        const datosPago = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT
+                    p.id_parqueo,
+                    esp.id_espacio,
+                    i.placa,
+                    i.usuario,
+                    tiempo_uso,
+                    i.fecha_hora_salida,
+                    tc.precio,
+                    mt.nombre AS medida_tiempo,
+                    tiempo_uso*tc.precio AS monto
+                FROM ingreso i
+                        INNER JOIN espacio esp ON i.id_espacio = esp.id_espacio
+                        INNER JOIN tipo_cobro tc ON esp.tipo_cobro_id = tc.tipo_cobro_id
+                        INNER JOIN medida_tiempo mt ON tc.medida_tiempo_id = mt.medida_tiempo_id
+                        INNER JOIN parqueo p ON i.id_parqueo = p.id_parqueo
+                        CROSS JOIN (SELECT TIMESTAMPDIFF(HOUR, fecha_hora_ingreso, fecha_hora_salida) AS tiempo_uso FROM ingreso  WHERE id_ingreso = ${ingreso.id_ingreso}) AS ht
+                WHERE i.id_ingreso = ${ingreso.id_ingreso};`, (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                });
+        });
+
+        const fechaPago = utilities.formatDate(new Date());
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                INSERT INTO pago (usuario, id_parqueo, placa_vehiculo, monto, fecha_hora_pago)
+                VALUES ('${datosPago[0].usuario}', '${datosPago[0].id_parqueo}', '${datosPago[0].placa}', ${datosPago[0].monto}, '${fechaPago}');`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        const pago = await selectRecord('pago', { usuario: datosPago[0].usuario });
+
+        return {
+            idParqueo: ingreso.id_parqueo,
+            idEspacio: ingreso.id_espacio,
+            placa: ingreso.placa,
+            tiempoUso: datosPago[0].tiempo_uso + 'h',
+            monto: datosPago[0].monto,
+            reciboId: pago.id_pago,
+            fechaSalida: ingreso.fecha_hora_salida,
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function registrarSalida(idEspacio, usuario, placa) {
+    try {
+        const ingreso = await selectRecord('ingreso', { id_espacio: idEspacio});
+        if (ingreso.usuario !== usuario || ingreso.placa !== placa) {
+            throw new Error("Los datos proporcionados no coinciden con el registro de ingreso");
+        }
+
+        const fecha_hora_salida = utilities.formatDate(new Date());
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                UPDATE ingreso
+                SET fecha_hora_salida = '${fecha_hora_salida}'
+                WHERE id_espacio = ${idEspacio} AND usuario = '${usuario}' AND placa = '${placa}';`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        await new Promise((resolve, reject) => {
+            connection.query(`
+                UPDATE espacio
+                SET ocupado = 0
+                WHERE id_espacio = ${idEspacio};`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        const ingresoActualizado = await selectRecord('ingreso', { id_ingreso: ingreso.id_ingreso });
+        const datosPago = await registrarPago(ingresoActualizado);
+        return datosPago;
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -360,8 +448,9 @@ module.exports ={
     createUser,
     asignarParqueoManual,
     asignarParqueoUsuario,
-    obtenerEspaciosDisponibles,
+    obtenerEspaciosDisponibles,    
     getUserByVehiculePlate,
     updatePenalty,
-    removePenalty
+    removePenalty,
+    registrarSalida
 }
