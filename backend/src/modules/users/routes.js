@@ -84,4 +84,16 @@ router.get("/:dpi/vehiculos", function (req, res) {
     });
 });
 
+router.get("/:dpi/pagos", function (req, res) {
+    const dpi = req.params.dpi;
+
+    const pagos = controller.getPagos(dpi)
+    .then((result) => {
+        generiResponse.success(req, res, result, 200);
+    })
+    .catch((error) => {
+        generiResponse.error(req, res, error, 500);
+    });
+});
+
 module.exports = router;
