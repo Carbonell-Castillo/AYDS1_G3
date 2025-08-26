@@ -130,30 +130,16 @@ function removeRecord(table,id){
 }
 
 async function totalInvertido(table, where) {
-    const [tiempo] = await new Promise((resolve, reject) => {
-        connection.query(`SELECT TIMESTAMPDIFF(HOUR, i.fecha_hora_ingreso, i.fecha_hora_salida) AS tiempo FROM ${table} i WHERE i.usuario = '${where.usuario}';`, (error, result) => {
+    const totalInvertido = await new Promise((resolve, reject) => {
+        connection.query(`SELECT usuario, SUM(monto) AS total_invertido FROM ${table} WHERE usuario = '${where.usuario}';`, (error, result) => {
             if (error) return reject(error);
             resolve(result);
         });
     });
-    const precioQuery = `
-    SELECT
-        tc.precio
-    FROM ingreso i
-        INNER JOIN espacio esp
-            ON i.id_espacio = esp.id_espacio
-        INNER JOIN tipo_cobro tc
-            ON esp.tipo_cobro_id = tc.tipo_cobro_id
-    WHERE i.usuario = '${where.usuario}';`
-    const [precio] = await new Promise((resolve, reject) => {
-        connection.query(precioQuery, (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-        });
-    });
+    console.log(totalInvertido);
     return {
-        "dpi": where.usuario,
-        "totalInvertido": Number(precio.precio) * tiempo.tiempo
+        "dpi": totalInvertido[0].usuario,
+        "totalInvertido": totalInvertido[0].total_invertido
     };
 }
 

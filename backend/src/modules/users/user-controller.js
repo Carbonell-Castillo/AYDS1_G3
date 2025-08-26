@@ -40,7 +40,7 @@ function getTotalInvertido(dpi) {
     return db.selectRecord('usuario', { usuario: dpi })
     .then((user) => {
         if (!user) throw new Error('User not found');
-        return db.totalInvertido('ingreso', { usuario: user.usuario });
+        return db.totalInvertido('pago', { usuario: user.usuario });
     });
 }
 
@@ -79,6 +79,23 @@ function getVehiculos(dpi) {
     });
 }
 
+function getPagos(dpi) {
+    return db.selectRecord('usuario', { usuario: dpi })
+    .then(async (user) => {
+        if (!user) throw new Error('User not found');
+        const pagos = await db.selectAll('pago', { usuario: user.usuario });
+        const pagosMapped = pagos.map(pago => ({
+            reciboId: pago.id_pago,
+            placa: pago.placa_vehiculo,
+            monto: pago.monto,
+            fecha: pago.fecha_hora_pago
+        }));
+        return {
+            "pagos": pagosMapped
+        }
+    });
+}
+
 module.exports = {
     getUsers,
     getTotalInvertido,
@@ -86,5 +103,6 @@ module.exports = {
     getVehiculosCount,
     getVehiculos,
     validateUser,
-    createUser
+    createUser,
+    getPagos
 };
