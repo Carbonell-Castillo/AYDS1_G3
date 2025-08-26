@@ -12,6 +12,68 @@ function validateUser(usuario,password)
 
 }
 
+const getPenaltiesByDpi = async (dpi) => {
+
+    try {
+            return await db.getUserByDpi(dpi)
+            .then( async (result) => {
+                let selectedUser = '';
+                result.forEach((element, index) => {
+                    selectedUser = element.usuario;
+                });
+                if(result.length > 0)
+                    return getPenaltiesByUser(selectedUser);                              
+                else
+                                return {
+                    "bloqueado": false,
+                    "motivo": "El usuario no existe",
+                    "multasPendientes": []
+                    };
+
+            })
+            .catch((error) => {
+                console.log(error);
+                throw error;
+            });
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+function getPenaltiesByUser(usuario)
+{
+    
+    return db.penaltiesByUser(usuario)
+    .then ((result) => {
+        if(result.length > 0){
+
+            return {
+                    "bloqueado": true,
+                    "motivo": result[0].descripcion,
+                    "multasPendientes": result.map((item)  => item.id_multa_sancion)
+                    };
+        }
+        else{
+            return {
+                    "bloqueado": false,
+                    "motivo": "",
+                    "multasPendientes": []
+                    };
+
+        }
+
+    })
+    .catch((error)=>
+        {
+            console.log(error);
+            throw error;
+        })
+
+}
+
 const createUser = async (reqParams) => {
     try {
         const result = await db.createUser('usuario', {
@@ -104,5 +166,7 @@ module.exports = {
     getVehiculos,
     validateUser,
     createUser,
-    getPagos
+    getPagos,
+    getPenaltiesByDpi,
+    getPenaltiesByUser
 };
