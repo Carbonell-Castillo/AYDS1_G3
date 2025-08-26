@@ -6,6 +6,8 @@ import {
   ReactiveFormsModule,
   FormGroup,
 } from '@angular/forms';
+import { MultasService, TIPOS_MULTA_MAP } from '../../services/multas';
+import { SessionService } from '../../services/session';
 
 type EstadoMulta = 'pendiente' | 'anulada' | 'correcta';
 
@@ -18,7 +20,7 @@ interface Multa {
   tipo: string;
   vehiculo: string;
   monto: number;
-  fecha: string;        // value de <input type="datetime-local">
+  fecha: string;       
   ubicacion?: string;
   motivo?: string;
   evidencias: Evidence[];
@@ -41,26 +43,30 @@ export class AgregarMultaComponent implements OnInit {
   evidencias: Evidence[] = [];
   uploaderDragover = false;
 
-  multas: Multa[] = [];          // ← Estado en memoria
-  editId: string | null = null;  // ← null = creando; string = editando
+  multas: Multa[] = [];         
+  editId: string | null = null; 
 
-  // Modal anular
+ 
   showAnularModal = false;
   anularTargetId: string | null = null;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private multasSvc: MultasService,
+    private session: SessionService
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      tipo: ['', Validators.required],
-      vehiculo: ['', Validators.required],
-      monto: [null, [Validators.required]],
-      fecha: ['', Validators.required],
+      tipo: ['', Validators.required],      
+      vehiculo: ['', Validators.required],  
+      monto: [null, [Validators.required, Validators.min(0)]],
+      fecha: [this.nowLocal(), Validators.required],
       ubicacion: [''],
       motivo: [''],
     });
 
-    // Límite y contador del motivo (280)
+   
     this.form.get('motivo')!.valueChanges.subscribe((v: string) => {
       const max = 280;
       if (v && v.length > max) {
@@ -70,9 +76,13 @@ export class AgregarMultaComponent implements OnInit {
         this.motivoCount = v ? v.length : 0;
       }
     });
+
+   
+    const dpi = this.session.getDpi();
+    if (dpi) this.loadMultasByDpi(dpi);
   }
 
-  // ===== Submit (crear / actualizar) =====
+  /** ===== Crear / Editar ===== */
   onSubmit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -83,87 +93,128 @@ export class AgregarMultaComponent implements OnInit {
     const now = new Date().toISOString();
 
     if (this.editId) {
-      // Actualizar
-      const idx = this.multas.findIndex(m => m.id === this.editId);
-      if (idx >= 0) {
-        const prev = this.multas[idx];
-        this.multas[idx] = {
-          ...prev,
-          tipo: (v.tipo || '').trim(),
-          vehiculo: (v.vehiculo || '').trim(),
-          monto: Number(v.monto || 0),
-          fecha: v.fecha,
-          ubicacion: (v.ubicacion || '').trim(),
-          motivo: (v.motivo || '').trim(),
-          evidencias: [...this.evidencias],
-          updatedAt: now,
-        };
-        alert('Cambios guardados.');
-      }
-    } else {
-      // Crear
-      const nueva: Multa = {
-        id: this.generateId(),
-        tipo: (v.tipo || '').trim(),
-        vehiculo: (v.vehiculo || '').trim(),
+     
+      const idNum = Number(this.editId);
+      this.multasSvc.actualizarMulta(idNum, {
         monto: Number(v.monto || 0),
-        fecha: v.fecha,
+        motivo: (v.motivo || '').trim()
+      }).subscribe({
+        next: () => {
+          const idx = this.multas.findIndex(m => m.id === this.editId);
+          if (idx >= 0) {
+            const prev = this.multas[idx];
+            this.multas[idx] = {
+              ...prev,
+              tipo: (v.tipo || '').trim(),
+              vehiculo: (v.vehiculo || '').trim().toUpperCase(),
+              monto: Number(v.monto || 0),
+              fecha: v.fecha,
+              ubicacion: (v.ubicacion || '').trim(),
+              motivo: (v.motivo || '').trim(),
+              evidencias: [...this.evidencias],
+              updatedAt: now,
+            };
+          }
+          alert('Cambios guardados.');
+          this.resetForm();
+        },
+        error: err => {
+          console.error(err);
+          alert('❌ No se pudo actualizar la multa.');
+        }
+      });
+    } else {
+     
+      const tipoTxt: string = (v.tipo || '').trim();
+      if (!TIPOS_MULTA_MAP[tipoTxt as keyof typeof TIPOS_MULTA_MAP]) {
+        alert('Selecciona un "Tipo de infracción" válido del listado.');
+        return;
+      }
+
+      this.multasSvc.crearMulta({
+        placa: (v.vehiculo || '').trim().toUpperCase(),
+        tipo: tipoTxt as any,
+        monto: Number(v.monto || 0),
+        fechaISO: v.fecha,
         ubicacion: (v.ubicacion || '').trim(),
-        motivo: (v.motivo || '').trim(),
-        evidencias: [...this.evidencias],
-        estado: 'pendiente',
-        createdAt: now,
-        updatedAt: now,
-      };
-      this.multas.unshift(nueva);
-      alert('Multa guardada correctamente.');
+        motivo: (v.motivo || '').trim()
+      }).subscribe({
+        next: (res) => {
+         
+          const nueva: Multa = {
+            id: String(res.body?.insertId || this.generateId()),
+            tipo: tipoTxt,
+            vehiculo: (v.vehiculo || '').trim().toUpperCase(),
+            monto: Number(v.monto || 0),
+            fecha: v.fecha,
+            ubicacion: (v.ubicacion || '').trim(),
+            motivo: (v.motivo || '').trim(),
+            evidencias: [...this.evidencias],
+            estado: 'pendiente',
+            createdAt: now,
+            updatedAt: now,
+          };
+          this.multas.unshift(nueva);
+          alert(res.body?.mensaje || 'Multa guardada correctamente.');
+          this.resetForm();
+        },
+        error: err => {
+          console.error(err);
+          alert('❌ No se pudo guardar la multa.');
+        }
+      });
     }
-
-    this.resetForm();
   }
 
-  // ===== Evidencias (uploader) =====
-  onUploaderClick(input: HTMLInputElement) {
-    input.click();
+  /** ===== Cargar historial del usuario (tabla) ===== */
+  private loadMultasByDpi(dpi: string) {
+    this.multasSvc.listarPorDpi(dpi).subscribe({
+      next: rows => {
+        this.multas = rows.map(r => ({
+          id: String(r.id_multa_sancion),
+          tipo: r.tipo_descripcion || '—',
+          vehiculo: r.placa_vehiculo,
+          monto: Number(r.monto || 0),
+          fecha: this.mysqlToLocalInput(r.fecha),
+          ubicacion: undefined,
+          motivo: r.descripcion || '',
+          evidencias: [],
+          estado: r.anulada ? 'anulada' : (r.pagada ? 'correcta' : 'pendiente'),
+          createdAt: r.fecha,
+          updatedAt: r.fecha,
+        }));
+      },
+      error: err => console.error(err)
+    });
   }
 
-  onDragOver(e: DragEvent) {
-    e.preventDefault();
-    this.uploaderDragover = true;
-  }
-  onDragLeave() {
-    this.uploaderDragover = false;
-  }
+  /** ===== Evidencias (uploader) solo UI ===== */
+  onUploaderClick(input: HTMLInputElement) { input.click(); }
+  onDragOver(e: DragEvent) { e.preventDefault(); this.uploaderDragover = true; }
+  onDragLeave() { this.uploaderDragover = false; }
   onDrop(e: DragEvent) {
     e.preventDefault();
     this.uploaderDragover = false;
     const files = e.dataTransfer?.files;
     if (files && files.length) this.handleFiles(files);
   }
-
   onFileInputChange(ev: Event) {
     const input = ev.target as HTMLInputElement;
     if (input.files && input.files.length) this.handleFiles(input.files);
   }
-
   private handleFiles(fileList: FileList | File[]) {
     const files = Array.from(fileList || []);
     const remaining = Math.max(0, 6 - this.evidencias.length);
     files.slice(0, remaining).forEach(f => {
       if (!f.type.startsWith('image/')) return;
       const reader = new FileReader();
-      reader.onload = () => {
-        this.evidencias.push({ name: f.name, dataUrl: reader.result });
-      };
+      reader.onload = () => this.evidencias.push({ name: f.name, dataUrl: reader.result });
       reader.readAsDataURL(f);
     });
   }
+  removeEvidence(idx: number) { this.evidencias.splice(idx, 1); }
 
-  removeEvidence(idx: number) {
-    this.evidencias.splice(idx, 1);
-  }
-
-  // ===== Tabla acciones =====
+  /** ===== Acciones tabla ===== */
   startEdit(m: Multa) {
     this.form.patchValue({
       tipo: m.tipo,
@@ -185,21 +236,29 @@ export class AgregarMultaComponent implements OnInit {
 
   confirmAnular() {
     if (!this.anularTargetId) return;
-    const idx = this.multas.findIndex(m => m.id === this.anularTargetId);
-    if (idx >= 0) {
-      this.multas[idx] = {
-        ...this.multas[idx],
-        estado: 'anulada',
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    this.closeModal();
+    const idNum = Number(this.anularTargetId);
+
+    this.multasSvc.anularMulta(idNum).subscribe({
+      next: () => {
+        const idx = this.multas.findIndex(m => m.id === this.anularTargetId);
+        if (idx >= 0) {
+          this.multas[idx] = {
+            ...this.multas[idx],
+            estado: 'anulada',
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        this.closeModal();
+        alert('Multa anulada.');
+      },
+      error: err => {
+        console.error(err);
+        alert('❌ No se pudo anular la multa.');
+      }
+    });
   }
 
-  closeModal() {
-    this.showAnularModal = false;
-    this.anularTargetId = null;
-  }
+  closeModal() { this.showAnularModal = false; this.anularTargetId = null; }
 
   ver(m: Multa) {
     const info =
@@ -214,9 +273,9 @@ Evidencias: ${m.evidencias.length}`;
     alert(info);
   }
 
-  // ===== Helpers =====
+  /** ===== Helpers ===== */
   resetForm() {
-    this.form.reset();
+    this.form.reset({ fecha: this.nowLocal() });
     this.motivoCount = 0;
     this.evidencias = [];
     this.editId = null;
@@ -234,15 +293,21 @@ Evidencias: ${m.evidencias.length}`;
       'status-correcta': s === 'correcta',
     };
   }
-  
-// Para la tabla de multas
-trackByMultaId = (_: number, m: Multa) => m.id;
+  trackByMultaId = (_: number, m: Multa) => m.id;
+  trackByEvidence = (i: number, _ev: Evidence) => i;
 
-// Para el grid de evidencias (usa el índice; simple y seguro)
-trackByEvidence = (i: number, _ev: Evidence) => i;
+  private generateId() { return Math.floor(Math.random() * 900000 + 100000).toString(); }
 
+  /** datetime-local default (YYYY-MM-DDTHH:mm) */
+  private nowLocal() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,16);
+  }
 
-  private generateId() {
-    return Math.floor(Math.random() * 900000 + 100000).toString();
+  /** MySQL 'YYYY-MM-DD HH:mm:ss' -> input datetime-local */
+  private mysqlToLocalInput(mysql: string) {
+    if (!mysql) return '';
+    return mysql.replace(' ', 'T').slice(0,16);
   }
 }

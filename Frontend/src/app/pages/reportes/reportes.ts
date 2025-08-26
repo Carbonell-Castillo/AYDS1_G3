@@ -2,20 +2,7 @@ import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Chart from 'chart.js/auto';
-
-type Periodo = 'diaria' | 'semanal';
-
-interface DiaOcc { label: string; iso: string; occ: number; }
-interface Sancion {
-  id: string; fecha: string; placa: string; tipo: string; motivo: string;
-  rol: 'Admin'|'Usuario'; estado: 'Pendiente'|'Pagada'|'Anulada'|string;
-}
-interface Movimiento {
-  id: number; fecha: string; placa: string; evento: 'Entrada'|'Salida'; parqueo: string;
-}
-interface PagoUsuario {
-  usuario: string; dpi: string; multas: number; pagadas: number; pendientes: number; total: number;
-}
+import { ReportsService, Periodo, SancionRow, MovimientoRow, PagoUsuarioRow } from '../../services/reports';
 
 @Component({
   selector: 'app-reportes',
@@ -25,50 +12,35 @@ interface PagoUsuario {
   styleUrls: ['./reportes.css']
 })
 export class Reportes implements OnInit, AfterViewInit {
-  // ---- Chart ----
   @ViewChild('occChartCanvas') occChartCanvas!: ElementRef<HTMLCanvasElement>;
   private chart?: Chart;
 
   periodo: Periodo = 'diaria';
-  fechaInicio = '';
+  fechaInicio = '';                      // ISO date (YYYY-MM-DD)
+  dias: { label: string; iso: string; occ: number; }[] = [];
 
-  dias: DiaOcc[] = [];
+  // Tablas
+  sanciones: SancionRow[] = [];
+  movimientos: MovimientoRow[] = [];
+  pagosUsuarios: PagoUsuarioRow[] = [];
 
-  // ---- Sanciones ----
-  sanciones: Sancion[] = [
-    {id:'S1021', fecha:'2025-08-20', placa:'P-123ABC', tipo:'Mal estacionado', motivo:'Fuera de línea',   rol:'Admin',  estado:'Pendiente'},
-    {id:'S1022', fecha:'2025-08-20', placa:'M-789XYZ', tipo:'Excedió tiempo', motivo:'15 min extra',      rol:'Usuario',estado:'Pagada'},
-    {id:'S1023', fecha:'2025-08-21', placa:'P-456DEF', tipo:'Área exclusiva',  motivo:'PMR',               rol:'Admin',  estado:'Pendiente'},
-    {id:'S1024', fecha:'2025-08-22', placa:'P-123ABC', tipo:'Bloqueo rampa',   motivo:'Salida bodega',     rol:'Admin',  estado:'Pagada'},
-    {id:'S1025', fecha:'2025-08-23', placa:'M-321AAA', tipo:'Mal estacionado', motivo:'Línea amarilla',    rol:'Usuario',estado:'Pendiente'},
-  ];
+  // Filtros
   buscaSancion = '';
   rolSancion: ''|'Admin'|'Usuario' = '';
   sancionDesde = '';
   sancionHasta = '';
 
-  // ---- Movimientos ----
-  movimientos: Movimiento[] = [
-    {id:1, fecha:'2025-08-22T08:12:00', placa:'P-123ABC', evento:'Entrada', parqueo:'N2 · B-14'},
-    {id:2, fecha:'2025-08-22T11:35:00', placa:'P-123ABC', evento:'Salida',  parqueo:'N2 · B-14'},
-    {id:3, fecha:'2025-08-23T09:02:00', placa:'M-789XYZ', evento:'Entrada', parqueo:'N1 · M-03'},
-    {id:4, fecha:'2025-08-23T10:25:00', placa:'P-456DEF', evento:'Entrada', parqueo:'N3 · C-21'},
-    {id:5, fecha:'2025-08-23T13:40:00', placa:'M-789XYZ', evento:'Salida',  parqueo:'N1 · M-03'},
-  ];
   buscaMov = '';
   movDesde = '';
   movHasta = '';
 
-  // ---- Pagos ----
-  pagosUsuarios: PagoUsuario[] = [
-    {usuario:'Carlos Pérez',  dpi:'1234567890101', multas:4, pagadas:3, pendientes:1, total:350.00},
-    {usuario:'Ana López',     dpi:'2234567890102', multas:2, pagadas:2, pendientes:0, total:150.00},
-    {usuario:'Bruce Castillo',dpi:'3234567890103', multas:3, pagadas:1, pendientes:2, total:275.00},
-  ];
   buscaPago = '';
+
+  constructor(private reports: ReportsService) {}
 
   // ---- KPI (calculados en vivo) ----
   get kpiRecaudo() {
+    // si deseas KPI real de ingresos: usa reports.getRecaudoMensual('2025-08')
     const t = this.pagosUsuarios.reduce((s, r) => s + (r.total || 0), 0);
     return this.fmtQ(t);
   }
@@ -79,7 +51,7 @@ export class Reportes implements OnInit, AfterViewInit {
   }
   get kpiMultas() { return this.sanciones.length; }
 
-  // ---- Filtros computados ----
+  // ---- Computados UI ----
   get sancionesFiltradas() {
     const q = (this.buscaSancion || '').toLowerCase();
     const rol = this.rolSancion;
@@ -87,7 +59,7 @@ export class Reportes implements OnInit, AfterViewInit {
     const d2 = this.parseDate(this.sancionHasta, true);
 
     return this.sanciones.filter(r => {
-      const hit = r.placa.toLowerCase().includes(q) || r.motivo.toLowerCase().includes(q);
+      const hit = r.placa.toLowerCase().includes(q) || (r.motivo || '').toLowerCase().includes(q);
       const okRol = !rol || r.rol === rol;
       const d = this.parseDate(r.fecha);
       return hit && okRol && this.inRange(d, d1, d2);
@@ -111,23 +83,68 @@ export class Reportes implements OnInit, AfterViewInit {
 
   // ---- Lifecycle ----
   ngOnInit(): void {
-    // Genera últimos 14 días con ocupación aleatoria
+    // fechaInicio: hoy - 13 días
     const hoy = new Date();
-    this.dias = Array.from({ length: 14 }, (_, i) => {
-      const d = new Date(hoy);
-      d.setDate(hoy.getDate() - (13 - i));
-      return { label: d.toLocaleDateString(), iso: this.toISODate(d), occ: 40 + Math.round(Math.random() * 55) };
-    });
-    this.fechaInicio = this.dias[0]?.iso ?? this.toISODate(new Date());
+    const start = new Date(hoy); start.setDate(hoy.getDate() - 13);
+    this.fechaInicio = this.toISODate(start);
+
+    // Cargar todo
+    this.loadOcupacion();
+    this.loadSanciones();
+    this.loadMovimientos();
+    this.loadPagosUsuarios();
   }
 
-  ngAfterViewInit(): void {
-    this.renderChart();
+  ngAfterViewInit(): void { this.renderChart(); }
+
+  // ---- Llamadas API ----
+  loadOcupacion() {
+    this.reports.getOcupacion(this.periodo, this.fechaInicio).subscribe({
+      next: rows => {
+        this.dias = rows.map(r => ({
+          label: new Date(r.fecha).toLocaleDateString(),
+          iso: r.fecha,
+          occ: Math.max(0, Math.min(100, Math.round(r.porcentaje)))
+        }));
+        this.renderChart();
+      },
+      error: err => { console.error(err); this.dias = []; this.renderChart(); }
+    });
+  }
+
+  loadSanciones() {
+    this.reports.getSanciones({
+      q: this.buscaSancion || undefined,
+      desde: this.sancionDesde || undefined,
+      hasta: this.sancionHasta || undefined,
+      rol: this.rolSancion || undefined
+    }).subscribe({
+      next: rows => { this.sanciones = rows || []; },
+      error: err => { console.error(err); this.sanciones = []; }
+    });
+  }
+
+  loadMovimientos() {
+    this.reports.getMovimientos({
+      q: this.buscaMov || undefined,
+      desde: this.movDesde || undefined,
+      hasta: this.movHasta || undefined
+    }).subscribe({
+      next: rows => { this.movimientos = rows || []; },
+      error: err => { console.error(err); this.movimientos = []; }
+    });
+  }
+
+  loadPagosUsuarios() {
+    this.reports.getPagosUsuarios({}).subscribe({
+      next: rows => { this.pagosUsuarios = rows || []; },
+      error: err => { console.error(err); this.pagosUsuarios = []; }
+    });
   }
 
   // ---- Chart handlers ----
-  onAplicarChart() { this.renderChart(); }
-  onPeriodoChange() { this.renderChart(); }
+  onAplicarChart() { this.loadOcupacion(); }
+  onPeriodoChange() { this.loadOcupacion(); }
 
   private renderChart() {
     const ds = this.buildData(this.periodo, this.fechaInicio);
@@ -148,42 +165,39 @@ export class Reportes implements OnInit, AfterViewInit {
       },
       options: {
         responsive: true,
-        scales: {
-          y: { beginAtZero: true, max: 100, ticks: { callback: (v: any) => v + '%' } }
-        },
+        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v:any)=> v + '%' } } },
         plugins: { legend: { display: false } }
       }
     };
 
     if (this.chart) this.chart.destroy();
-    this.chart = new Chart(this.occChartCanvas.nativeElement, cfg);
+    if (this.occChartCanvas) this.chart = new Chart(this.occChartCanvas.nativeElement, cfg);
   }
 
   private buildData(periodo: Periodo, startISO?: string) {
     if (periodo === 'diaria') {
       const from = startISO ? this.parseDate(startISO) : null;
       const view = this.dias.filter(d => this.inRange(this.parseDate(d.iso), from, null));
-      return {
-        labels: view.map(d => d.label),
-        data: view.map(d => d.occ)
-      };
+      return { labels: view.map(d => d.label), data: view.map(d => d.occ) };
     } else {
-      // Semanal (dos últimos bloques de 7 días como demo)
-      const chunks = [this.dias.slice(0, 7), this.dias.slice(7, 14)];
-      const labels = ['Semana -1', 'Semana actual'];
-      const data = chunks.map(w => Math.round(w.reduce((s, r) => s + r.occ, 0) / w.length));
+      // Semanal: promedios por semana (simple)
+      if (!this.dias.length) return { labels: [], data: [] };
+      const weeks: { [wk:string]: number[] } = {};
+      this.dias.forEach(d => {
+        const dt = new Date(d.iso);
+        const wk = this.weekKey(dt);
+        (weeks[wk] ||= []).push(d.occ);
+      });
+      const labels = Object.keys(weeks);
+      const data = labels.map(k => Math.round(weeks[k].reduce((s,n)=>s+n,0)/weeks[k].length));
       return { labels, data };
     }
   }
 
   // ---- Acciones ----
   exportCSV() {
-    const rows: (string|number)[][] = [
-      ['Usuario','DPI','Multas','Pagadas','Pendientes','Monto Total']
-    ];
-    this.pagosFiltrados.forEach(r =>
-      rows.push([r.usuario, r.dpi, r.multas, r.pagadas, r.pendientes, r.total.toFixed(2)])
-    );
+    const rows: (string|number)[][] = [['Usuario','DPI','Multas','Pagadas','Pendientes','Monto Total']];
+    this.pagosFiltrados.forEach(r => rows.push([r.usuario, r.dpi, r.multas, r.pagadas, r.pendientes, r.total.toFixed(2)]));
     const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
@@ -193,26 +207,18 @@ export class Reportes implements OnInit, AfterViewInit {
     URL.revokeObjectURL(a.href);
   }
 
-  exportPDF(ev: Event) {
-    ev.preventDefault();
-    window.print();
-  }
+  exportPDF(ev: Event) { ev.preventDefault(); window.print(); }
 
   // ---- Utils ----
   fmtQ(n: number) { return 'Q ' + Number(n || 0).toFixed(2); }
   fmtPct(n: number) { return Number(n || 0).toFixed(0) + '%'; }
-  toISODate(d: Date) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
-  parseDate(s?: string | null, endOfDay = false): Date | null {
-    if (!s) return null;
-    return endOfDay ? new Date(s + 'T23:59:59') : new Date(s + 'T00:00:00');
-  }
-  inRange(d: Date | null, from: Date | null, to: Date | null) {
-    if (!d) return false;
-    return (!from || d >= from) && (!to || d <= to);
-  }
+  toISODate(d: Date) { return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+  parseDate(s?: string | null, endOfDay = false): Date | null { if (!s) return null; return new Date(s + (endOfDay ? 'T23:59:59' : 'T00:00:00')); }
+  inRange(d: Date | null, from: Date | null, to: Date | null) { if (!d) return false; return (!from || d >= from) && (!to || d <= to); }
+  weekKey(d: Date) { const onejan = new Date(d.getFullYear(),0,1); const diff = d.getTime() - onejan.getTime(); const wk = Math.ceil((((diff/86400000)+onejan.getDay()+1)/7)); return `Sem ${wk}`; }
 
   // trackBy
-  trackBySancion = (_: number, s: Sancion) => s.id;
-  trackByMov     = (_: number, m: Movimiento) => m.id;
-  trackByPago    = (_: number, p: PagoUsuario) => p.dpi;
+  trackBySancion = (_: number, s: SancionRow) => s.id;
+  trackByMov     = (_: number, m: MovimientoRow) => m.id;
+  trackByPago    = (_: number, p: PagoUsuarioRow) => p.dpi;
 }
