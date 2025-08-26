@@ -1,7 +1,7 @@
 // src/app/services/session.ts
 import { Injectable } from '@angular/core';
 
-type User = { usuario?: string; dpi?: string; nombre?: string; [k: string]: any };
+type User = { usuario?: string; dpi?: string; nombre?: string; id_parqueo?: string; [k: string]: any };
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
@@ -10,11 +10,12 @@ export class SessionService {
 
   setUser(user: User) {
     localStorage.setItem(this.LS_KEY, JSON.stringify(user));
-    const dpi = user?.dpi ?? user?.usuario ?? null;
+    const dpi = user?.dpi ?? user?.usuario ?? null ;
     if (dpi) {
       sessionStorage.setItem('dpi', dpi);
       this.setCookie('dpi', dpi, 7);
     }
+    
   }
 
   getUser(): User | null {
@@ -27,10 +28,17 @@ export class SessionService {
     return user?.dpi ?? user?.usuario ?? sessionStorage.getItem('dpi') ?? this.getCookie('dpi');
   }
 
+  getIdParqueo(): string | null {
+    const user = this.getUser();
+    return user?.id_parqueo ?? sessionStorage.getItem('id_parqueo') ?? this.getCookie('id_parqueo');
+  }
+
   clear() {
     localStorage.removeItem(this.LS_KEY);
     sessionStorage.removeItem('dpi');
+    sessionStorage.removeItem('idParqueo');
     this.deleteCookie('dpi');
+    this.deleteCookie('idParqueo');
   }
 
 

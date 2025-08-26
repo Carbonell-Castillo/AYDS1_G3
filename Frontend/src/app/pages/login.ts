@@ -172,6 +172,7 @@ export class LoginComponent {
         if (body?.autenticado) {
           // Guarda info de usuario en sesión
           this.session.setUser(body.user);
+          console.log("ID Parqueo:", body.user?.id_parqueo);
           alert(`Bienvenido, ${body.user?.nombre || 'usuario'}!`);
           // Navega al dashboard
           this.router.navigateByUrl('/app');

@@ -2,25 +2,22 @@
   <div class="left">
     <h1>Nuevo vehiculo</h1>
     <ul class="breadcrumb">
-      <li>
-        <a href="#">EasyPark</a>
-      </li>
+      <li><a href="#">EasyPark</a></li>
       <li><i class="bx bx-chevron-right"></i></li>
-      <li>
-        <a class="active" href="#">Nuevo vehiculo</a>
-      </li>
+      <li><a class="active" href="#">Nuevo vehiculo</a></li>
     </ul>
   </div>
 </div>
 
 <div class="container-form">
   <div class="form">
-    <form action="">
+    <!-- Usa Reactive Forms -->
+    <form [formGroup]="vehicleForm" (ngSubmit)="onSubmit()">
       <h2>Registro de Vehículo</h2>
 
       <div class="form-group">
-        <select id="tipo" name="tipo" required>
-          <option value="auto" selected>Vehículo</option>
+        <select id="tipo" formControlName="tipo" required>
+          <option value="auto">Vehículo</option>
           <option value="moto">Motocicleta</option>
         </select>
         <label for="tipo">Tipo</label>
@@ -28,31 +25,45 @@
 
       <div class="grid-2">
         <div class="form-group">
-          <input type="text" id="placa" placeholder=" " required />
+          <input type="text" id="placa" placeholder=" " formControlName="placa" (input)="toUpperPlaca($event)" required />
           <label for="placa">Placa</label>
+          <div class="error" *ngIf="isInvalid('placa')">Ingresa la placa.</div>
         </div>
 
         <div class="form-group">
-          <input type="text" id="modelo" placeholder=" " required />
+          <input type="text" id="modelo" placeholder=" " formControlName="modelo" required />
           <label for="modelo">Modelo</label>
+          <div class="error" *ngIf="isInvalid('modelo')">Ingresa el modelo.</div>
         </div>
       </div>
+      <div class="grid-2">
+  <div class="form-group">
+        <input type="text" id="marca" placeholder=" " formControlName="marca" />
+        <label for="marca">Marca (opcional)</label>
+      </div>
+      
+        <div class="form-group">
+        <input type="text" id="linea" placeholder=" " formControlName="linea" />
+        <label for="linea">Línea (opcional)</label>
+      </div>
+      </div>
+    
 
       <div class="form-group color-picker">
-        <input type="color" id="color" />
+        <input type="color" id="color" formControlName="color" />
         <label for="color">Color</label>
       </div>
 
       <div class="actions">
-        <button>
-            <span class="text">Agregar Vehiculo</span>
-            <i class="bx bx-right-arrow-alt"></i>
+        <button type="submit" [disabled]="loading() || vehicleForm.invalid">
+          <span class="text">{{ loading() ? 'Guardando...' : 'Agregar Vehiculo' }}</span>
+          <i class="bx bx-right-arrow-alt" *ngIf="!loading()"></i>
         </button>
       </div>
     </form>
   </div>
 
   <div class="car">
-    <img src="https://www.bmw.com.gt/images/modelos/m2/bmw-m2.webp?68964e80334e1" alt="" />
+    <img src="https://www.bmw.com.gt/images/modelos/m2/bmw-m2.webp?68964e80334e1" alt="preview" />
   </div>
 </div>
