@@ -2,35 +2,35 @@
   <div class="left">
     <h1>Multas y Sanciones</h1>
     <ul class="breadcrumb">
-      <li>
-        <a href="#">EasyPark</a>
-      </li>
+      <li><a href="#">EasyPark</a></li>
       <li><i class="bx bx-chevron-right"></i></li>
-      <li>
-        <a class="active" href="#">Inicio</a>
-      </li>
+      <li><a class="active" href="#">Inicio</a></li>
     </ul>
   </div>
 </div>
 
-<ul class="box-info">
+<!-- Estados -->
+<div *ngIf="loading()" class="loading">Cargando...</div>
+<div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+
+<ul class="box-info" *ngIf="!loading() && !errorMsg()">
   <li>
     <i class="bx bx-siren"></i>
     <span class="text">
-      <h3>28</h3>
+      <h3>{{ totalMultas() }}</h3>
       <p>Multas</p>
     </span>
   </li>
   <li>
     <i class="bx bx-wallet-alt"></i>
     <span class="text">
-      <h3>Q350.00</h3>
+      <h3>{{ totalDeuda() | currency : 'GTQ' : 'symbol-narrow' : '1.0-2' }}</h3>
       <p>Total Deuda</p>
     </span>
   </li>
 </ul>
 
-<div class="table-data">
+<div class="table-data" *ngIf="!loading() && !errorMsg()">
   <div class="order">
     <div class="head">
       <h3>Listado</h3>
@@ -49,21 +49,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>
-            <img src="https://placehold.co/600x400/png" />
-            <p>Honda Civic 2025</p>
-          </td>
-          <td>Multa</td>
-          <td>Mal estacionado</td>
-          <td>16/08/2025</td>
-          <td>Q125</td>
-          <td><span class="status pending">Pendiente</span></td>
-          <td>
-            <span class="pay"><i class="bx bx-wallet"></i></span>
-          </td>
-          <td>
-            <span class="pay"><i class="bx bx-siren"></i></span>
+        <tr *ngFor="let m of multas(); trackBy: trackByMulta">
+          <!-- ... -->
+        </tr>
+
+        <tr *ngIf="!multas().length">
+          <td colspan="8" style="text-align: center; opacity: 0.7">
+            No tienes multas registradas.
           </td>
         </tr>
       </tbody>
