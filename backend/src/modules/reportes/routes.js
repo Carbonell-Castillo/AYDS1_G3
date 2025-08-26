@@ -11,5 +11,17 @@ router.get("/ocupacion", (req, res) => {
         .catch(error => genericResponse.error(req, res, error, 500));
 });
 
+router.get("/sanciones/:placa", (req, res) => {
+    const params = req.params.placa;
+
+    controller.getSanciones(params)
+        .then((result) => {
+            genericResponse.success(req, res, result, 200);
+        })
+        .catch((error) => {
+            genericResponse.error(req, res, error, 500);
+        });
+});
+
 module.exports = router;
 
