@@ -9,6 +9,25 @@ const getOcupacion = async (periodo) => {
     }
 };
 
+const getSanciones = async (placa) => {
+    try {
+        const result = await db.selectAllRecords('multa_sancion', { placa_vehiculo: placa });
+        const sanciones = result.map(sancion => ({
+            id: sancion.id_multa_sancion,
+            motivo: sancion.descripcion,
+            monto: sancion.monto,
+            fecha: sancion.fecha
+        }));
+        return {
+            placa: placa,
+            sanciones: sanciones
+        }
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
-    getOcupacion
+    getOcupacion,
+    getSanciones
 };
