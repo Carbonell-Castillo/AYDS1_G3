@@ -441,6 +441,43 @@ async function registrarSalida(idEspacio, usuario, placa) {
     }
 }
 
+async function getOcupacion(periodo) {
+    const fechaActual = new Date();
+    const periodoFormateado = fechaActual.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    let whereClause = "";
+
+    if (periodo === 'diario') {
+        whereClause = "WHERE DATE(fecha_hora_ingreso) = CURDATE()";
+    } else if (periodo === 'semanal') {
+        whereClause = "WHERE fecha_hora_ingreso >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    } else if (periodo === 'mensual') {
+        whereClause = "WHERE fecha_hora_ingreso >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)";
+    }
+
+    try {
+        const result = await new Promise((resolve, reject) => {
+            connection.query(`
+                SELECT
+                    DATE_FORMAT(fecha_hora_ingreso, '%H:%i') AS hora,
+                    COUNT(*) AS espaciosOcupados
+                FROM ingreso
+                ${whereClause}
+                GROUP BY hora
+                ORDER BY hora;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            });
+        });
+
+        return {
+            periodo: periodoFormateado,
+            ocupacion: result
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports ={
     selectAll,
     selectRecord,
@@ -461,5 +498,6 @@ module.exports ={
     removePenalty,
     registrarSalida,
     penaltiesByUser,
-    getUserByDpi
+    getUserByDpi,
+    getOcupacion
 }
