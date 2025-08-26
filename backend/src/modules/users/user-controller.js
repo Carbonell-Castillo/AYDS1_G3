@@ -6,11 +6,14 @@ function getUsers()
 
 }
 
-function validateUser(usuario,password)
-{
-    return db.validateUser(usuario,password);
-
+function validateUser(usuario, password) {
+  return db.validateUser(usuario, password).then((user) => {
+    if (!user) return { autenticado: false };
+    // aquí podrías generar JWT si quieres
+    return { autenticado: true, user };
+  });
 }
+
 
 const getPenaltiesByDpi = async (dpi) => {
 
@@ -98,6 +101,27 @@ const createUser = async (reqParams) => {
 };
 
 
+function getMultas(dpi) {
+  return db.multasByDpi(dpi);
+}
+
+function getMultasTotal(dpi) {
+  return db.multasTotalByDpi(dpi);
+}
+
+function getVehiculosConMulta(dpi) {
+  return db.vehiculosConMultaByDpi(dpi);
+}
+
+function pagarMulta(id) {
+  return db.pagarMulta(id);
+}
+
+function apelarMulta(id, comentario) {
+  return db.apelarMulta(id, comentario);
+}
+
+
 function getTotalInvertido(dpi) {
     return db.selectRecord('usuario', { usuario: dpi })
     .then((user) => {
@@ -158,6 +182,26 @@ function getPagos(dpi) {
     });
 }
 
+
+async function registrarVehiculoUsuario(dpi, body) {
+  // body: { placa, tipo_vehiculo_id, marca, modelo, color? }
+  const payload = {
+    usuario: dpi,
+    placa: body.placa,
+    tipo_vehiculo_id: body.tipo_vehiculo_id,
+    marca: body.marca,
+    modelo: body.modelo,
+    linea: body.linea || null,
+    color: body.color || null
+  };
+  return db.registrarVehiculoUsuario(payload);
+}
+
+async function desvincularVehiculoUsuario(dpi, placa) {
+  return db.desvincularUsuarioVehiculo(dpi, placa);
+}
+
+
 module.exports = {
     getUsers,
     getTotalInvertido,
@@ -168,5 +212,14 @@ module.exports = {
     createUser,
     getPagos,
     getPenaltiesByDpi,
-    getPenaltiesByUser
+    getPenaltiesByUser,
+    registrarVehiculoUsuario,
+    desvincularVehiculoUsuario,
+    getMultas,
+    getMultasTotal,
+    getVehiculosConMulta,
+    pagarMulta,
+    apelarMulta,
+  registrarVehiculoUsuario,
+  desvincularVehiculoUsuario
 };

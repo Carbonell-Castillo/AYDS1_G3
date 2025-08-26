@@ -56,11 +56,9 @@ const obtenerEspaciosDisponibles = async () => {
     }
 };
 
-const registrarSalida = async (idEspacio, body) => {
-    const { usuario, placa } = body;
-
+const obtenerListadoEspaciosDisponibles = async () => {
     try {
-        const result = await db.registrarSalida(idEspacio, usuario, placa);
+        const result = await db.obtenerListadoEspaciosDisponibles();
         return result;
     } catch (error) {
         console.log(error);
@@ -68,10 +66,45 @@ const registrarSalida = async (idEspacio, body) => {
     }
 };
 
+
+const obtenerListadoEspaciosOcupados = async () => {
+    try {
+        const result = await db.obtenerListadoEspaciosOcupados();
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+const obtenerConfiguracionParqueoId = async (id) => {
+    try {
+        const result = await db.obtenerConfiguracionParqueoId(id);
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+const registrarSalida = async (body) => {
+  const { usuario, placa } = body;
+  try {
+    const result = await db.cerrarIngreso(usuario, placa);
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 module.exports = {
     asignarParqueoAutomatico,
     asignarParqueoManual,
     asignarParqueoUsuario,
     obtenerEspaciosDisponibles,
-    registrarSalida
+    registrarSalida,
+    obtenerListadoEspaciosOcupados,
+    obtenerConfiguracionParqueoId
 };

@@ -53,11 +53,10 @@ router.get('/disponibles', (req, res) => {
         });
 });
 
-router.post('/:id/salida', (req, res) => {
-    const id = req.params.id;
-    const body = req.body;
 
-    controller.registrarSalida(id, body)
+router.get('/configuracion/:id', (req, res) => {
+    const { id } = req.params;
+    controller.obtenerConfiguracionParqueoId(id)
         .then((result) => {
             genericResponse.success(req, res, result, 200);
         })
@@ -65,6 +64,26 @@ router.post('/:id/salida', (req, res) => {
             console.log(error);
             genericResponse.error(req, res, error, 500);
         });
-})
+});
+
+router.get('/ocupados', (req, res) => {
+    controller.obtenerListadoEspaciosOcupados()
+        .then((result) => {
+            genericResponse.success(req, res, result, 200);
+        })
+        .catch((error) => {
+            console.log(error);
+            genericResponse.error(req, res, error, 500);
+        });
+});
+
+
+router.post('/salida', (req, res) => {
+  const body = req.body;
+  controller.registrarSalida(body)
+    .then((result) => genericResponse.success(req, res, result, 200))
+    .catch((error) => genericResponse.error(req, res, error.message || error, 500));
+});
+
 
 module.exports = router;
