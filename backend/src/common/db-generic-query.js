@@ -55,6 +55,17 @@ function validateUser(usuario,password){
     });
 }
 
+function penaltiesByUser(usuario){
+    return new Promise( (resolve,reject) => {
+        let q =`SELECT id_multa_sancion, descripcion  FROM multa_sancion where usuario ='${usuario}' AND pagada=0 AND anulada=0`;
+        connection.query(q,(error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
+}
+
+
 function getUserByVehiculePlate(plate){
     return new Promise( (resolve,reject) => {
         let q =`SELECT * FROM usuario_vehiculo where  placa_vehiculo ='${plate}' LIMIT 1`;
@@ -66,6 +77,16 @@ function getUserByVehiculePlate(plate){
     });
 }
 
+function getUserByDpi(dpi){
+    return new Promise( (resolve,reject) => {
+        let q =`SELECT * FROM usuario where  dpi ='${dpi}' LIMIT 1`;
+        console.log(q);
+        connection.query(q,(error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
+}
 
 
 async function createUser(table,record)
@@ -438,5 +459,7 @@ module.exports ={
     getUserByVehiculePlate,
     updatePenalty,
     removePenalty,
-    registrarSalida
+    registrarSalida,
+    penaltiesByUser,
+    getUserByDpi
 }

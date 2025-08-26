@@ -35,6 +35,18 @@ router.post('/', (req, res) => {
 });
 
 
+router.get("/:dpi/notificaciones", function (req, res) {
+    const dpi = req.params.dpi;
+
+    const penalties = controller.getPenaltiesByDpi(dpi)
+    .then((result) => {
+        generiResponse.success(req, res, result, 200);
+    })
+    .catch((error) => {
+        generiResponse.error(req, res, error, 500);
+    });
+});
+
 
 router.get("/:dpi/total-invertido", function (req, res) {
     const dpi = req.params.dpi;
