@@ -1,30 +1,33 @@
 const db = require('../../common/db-generic-query');
 
-async function getOcupacion(periodo = 'diaria', desde) {
-  if (periodo === 'semanal') return db.reporteOcupacionSemanal(desde);
-  return db.reporteOcupacionDiaria(desde);
-}
+const getOcupacion = async (periodo) => {
+    try {
+        const result = await db.getOcupacion(periodo);
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
 
-async function getSanciones({ q, desde, hasta, rol }) {
-  return db.reporteSanciones({ q, desde, hasta, rol });
-}
-
-async function getMovimientos({ q, desde, hasta }) {
-  return db.reporteMovimientos({ q, desde, hasta });
-}
-
-async function getPagosUsuarios({ desde, hasta, q }) {
-  return db.reportePagosUsuarios({ desde, hasta, q });
-}
-
-async function getRecaudoMensual(mes) {
-  return db.reporteRecaudoMensual(mes); // number
-}
+const getSanciones = async (placa) => {
+    try {
+        const result = await db.selectAllRecords('multa_sancion', { placa_vehiculo: placa });
+        const sanciones = result.map(sancion => ({
+            id: sancion.id_multa_sancion,
+            motivo: sancion.descripcion,
+            monto: sancion.monto,
+            fecha: sancion.fecha
+        }));
+        return {
+            placa: placa,
+            sanciones: sanciones
+        }
+    } catch (error) {
+        throw error;
+    }
+};
 
 module.exports = {
-  getOcupacion,
-  getSanciones,
-  getMovimientos,
-  getPagosUsuarios,
-  getRecaudoMensual
+    getOcupacion,
+    getSanciones
 };
