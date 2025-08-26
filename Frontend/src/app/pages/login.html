@@ -1,0 +1,154 @@
+
+<div class="principal-container">
+<div class="container" [class.right-panel-active]="rightPanel()">
+  <!-- Registro -->
+  <div class="form-container sign-up-container">
+    <form [formGroup]="signupForm" (ngSubmit)="submitSignup()" novalidate>
+      <h1>Crear Cuenta</h1>
+
+      <div class="social-container">
+        <a href="#" class="social"><i class="fab fa-github"></i></a>
+      </div>
+      <span>O utiliza tus datos para registrarte</span>
+
+      <!-- PASO 0 -->
+      <section class="step" [class.hidden]="current() !== 0">
+        <div>
+          <input class="input" formControlName="dpi" type="text" placeholder="DPI" />
+          <div class="error" [class.hidden]="!isInvalid('dpi')">Ingresa tu DPI.</div>
+        </div>
+
+        <div class="row">
+          <div>
+            <input class="input" formControlName="nombre" type="text" placeholder="Nombre" />
+            <div class="error" [class.hidden]="!isInvalid('nombre')">Ingresa tu nombre.</div>
+          </div>
+          <div>
+            <input class="input" formControlName="apellido" type="text" placeholder="Apellido" />
+            <div class="error" [class.hidden]="!isInvalid('apellido')">Ingresa tu apellido.</div>
+          </div>
+        </div>
+
+        <div class="custom-select">
+          <select formControlName="genero">
+            <option value="">Género</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="X">Prefiero no decir</option>
+          </select>
+        </div>
+        <div class="error" [class.hidden]="!isInvalid('genero')">Selecciona una opción.</div>
+      </section>
+
+      <!-- PASO 1 -->
+      <section class="step" [class.hidden]="current() !== 1">
+        <input class="input" formControlName="email" type="email" placeholder="Email" />
+        <div class="error" [class.hidden]="!isInvalid('email')">Ingresa un email válido.</div>
+
+        <input class="input" formControlName="telefono" type="tel" placeholder="Teléfono" />
+        <div class="error" [class.hidden]="!isInvalid('telefono')">Ingresa un teléfono válido.</div>
+      </section>
+
+      <!-- PASO 2 -->
+      <section class="step" [class.hidden]="current() !== 2">
+        <div class="strength" [ngClass]="strength()">
+          <span></span>
+        </div>
+
+        <input class="input" formControlName="password" type="password" placeholder="Password (mín. 8 caracteres)" />
+        <div class="error" [class.hidden]="!isInvalid('password')">Debe tener al menos 8 caracteres.</div>
+
+        <input class="input" formControlName="confirm" type="password" placeholder="Repetir Password" />
+        <div class="error" [class.hidden]="!(isInvalid('confirm') || hasGroupError('confirmNoCoincide'))">
+          Las contraseñas no coinciden.
+        </div>
+      </section>
+
+      <!-- PASO 3 -->
+      <section class="step" [class.hidden]="current() !== 3">
+        <div class="file-dropzone"
+             (click)="onDropzoneClick(fileInput)"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)"
+             #dropHost>
+          <i class="fas fa-id-card"></i>
+          <p><strong>Arrastra tu licencia aquí</strong> o haz clic para seleccionarla</p>
+          <span class="file-type">Formatos permitidos: JPG, PNG</span>
+
+          <input type="file"
+                 #fileInput
+                 hidden
+                 accept="image/*"
+                 (change)="onFileChange($event, dropHost)" />
+
+          <div class="success-wrap" [class.hidden]="!signupForm.value.licencia" [class.show]="!!signupForm.value.licencia">
+            <svg class="checkmark" viewBox="0 0 52 52" aria-hidden="true">
+              <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"></circle>
+              <path class="checkmark__check" fill="none" d="M14 27 l8 8 l16 -16"></path>
+            </svg>
+            <p class="ok-title">Archivo cargado correctamente</p>
+            <p class="ok-path">
+              <span>{{ signupForm.value.licencia?.name || '—' }}</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="button" class="btn ghost" (click)="back()" [disabled]="current() === 0">
+          Regresar
+        </button>
+        <div style="display:flex; gap:8px">
+          <button type="button" class="btn primary"
+                  (click)="next()"
+                  [class.hidden]="current() === (totalSteps - 1)">
+            Continuar
+          </button>
+          <button type="submit" class="btn success"
+                  [class.hidden]="current() !== (totalSteps - 1)">
+            Crear cuenta
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Login -->
+  <div class="form-container sign-in-container">
+<form [formGroup]="signinForm" (ngSubmit)="submitSignin()">
+  <h1>EasyPark</h1>
+  <div class="social-container">
+    <a href="#" class="social"><i class="fab fa-github"></i></a>
+  </div>
+  <span>O utiliza tu cuenta</span>
+
+  <!-- Antes: formControlName="email" -->
+  <input type="text" placeholder="Email o DPI" formControlName="usuario" />
+  <div class="error" *ngIf="signinForm.get('usuario')?.touched && signinForm.get('usuario')?.invalid">
+    Ingresa un email válido o un DPI de 13 dígitos.
+  </div>
+
+  <input type="password" placeholder="Password" formControlName="password" />
+  <button type="submit">Iniciar sesión</button>
+</form>
+
+  </div>
+
+  <!-- Overlays -->
+  <div class="overlay-container">
+    <div class="overlay">
+      <div class="overlay-panel overlay-left">
+        <h1>EasyPark</h1>
+        <p>Ingresa tus datos y comienza esta nueva experiencia con nosotros.</p>
+        <button class="ghost" (click)="setRightPanel(false)">Iniciar Sesión</button>
+      </div>
+      <div class="overlay-panel overlay-right">
+        <h1>¡Bienvenido de nuevo!</h1>
+        <p>Para seguir conectado con nosotros, inicia sesión con tu información personal.</p>
+        <button class="ghost" (click)="setRightPanel(true)">Crear Cuenta</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

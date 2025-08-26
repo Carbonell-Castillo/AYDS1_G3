@@ -1,0 +1,33 @@
+<div class="head-title">
+  <div class="left">
+    <h1>Mis Vehiculos</h1>
+    <ul class="breadcrumb">
+      <li><a href="#">EasyPark</a></li>
+      <li><i class="bx bx-chevron-right"></i></li>
+      <li><a class="active" href="#">Mis Vehiculos</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- estados -->
+<div *ngIf="loading()" class="loading">Cargando...</div>
+<div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+
+<div class="container-vehicles" *ngIf="!loading() && !errorMsg()">
+  <ng-container *ngIf="items().length; else vacio">
+    <div class="card" *ngFor="let v of items()">
+      <div class="imgBox">
+        <img [src]="imagenPara(v)" alt="vehículo" class="mouse" />
+      </div>
+      <div class="contentBox">
+        <h3>{{ tituloPara(v) }}</h3>
+        <h2 class="price">{{ anioDe(v) }}</h2>
+        <a class="buy" href="javascript:void(0)">Ver más</a>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #vacio>
+    <div style="opacity:.7; padding: 16px;">Aún no tienes vehículos registrados.</div>
+  </ng-template>
+</div>

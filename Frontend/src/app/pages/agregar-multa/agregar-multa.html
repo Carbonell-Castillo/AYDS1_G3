@@ -1,0 +1,141 @@
+<div class="head-title">
+  <div class="left">
+    <h1>Agregar Multa</h1>
+    <ul class="breadcrumb">
+      <li><a>EasyPark</a></li>
+      <li><i class="bx bx-chevron-right"></i></li>
+      <li><a class="active">Nueva multa</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container-form-multa">
+  <div class="form">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
+      <!-- Datos principales -->
+      <div class="form-grid-3">
+        <div class="form-group">
+          <input id="tipo" list="tipos" placeholder=" " formControlName="tipo" required>
+          <label for="tipo">Tipo de infracción*</label>
+          <datalist id="tipos">
+            <option value="Mal estacionado"></option>
+            <option value="Bloqueo de rampa"></option>
+            <option value="Área exclusiva (PMR/Residente)"></option>
+            <option value="Excedió tiempo permitido"></option>
+          </datalist>
+        </div>
+
+        <div class="form-group">
+          <input id="vehiculo" placeholder=" " formControlName="vehiculo" required>
+          <label for="vehiculo">Vehículo (Placa)*</label>
+        </div>
+
+        <div class="form-group input-prefix">
+          <input id="monto" type="number" placeholder=" " formControlName="monto" required>
+          <label for="monto">Monto*</label>
+        </div>
+      </div>
+
+      <div class="form-grid-2" style="margin-top:12px;">
+        <div class="form-group">
+          <input id="fecha" type="datetime-local" placeholder=" " formControlName="fecha" required>
+          <label for="fecha">Fecha y hora*</label>
+        </div>
+        <div class="form-group">
+          <input id="ubicacion" placeholder=" " formControlName="ubicacion">
+          <label for="ubicacion">Ubicación / Parqueo (opcional)</label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:12px;">
+        <textarea id="motivo" placeholder="Motivo " formControlName="motivo"></textarea>
+        <div class="help"><span>{{ motivoCount }}</span> / 280</div>
+      </div>
+
+      <!-- Evidencia -->
+      <div class="form-group" style="margin-top:12px;">
+        <label style="top:-10px;font-size:.9em;color:var(--blue);background:transparent;"></label>
+
+        <div
+          class="uploader"
+          [class.dragover]="uploaderDragover"
+          (click)="onUploaderClick(fileInput)"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          (drop)="onDrop($event)"
+        >
+          <input #fileInput id="evidencias" type="file" accept="image/*" multiple (change)="onFileInputChange($event)">
+          <p><i class='bx bxs-cloud-upload'></i></p>
+          <p>Arrastra y suelta aquí o <strong>haz click para seleccionar</strong></p>
+          <p class="hint">Formatos: JPG/PNG. Hasta 6 imágenes.</p>
+        </div>
+
+        <div class="preview-grid">
+          <div class="preview-item"
+     *ngFor="let ev of evidencias; index as i; trackBy: trackByEvidence">
+  <img [src]="ev.dataUrl" [alt]="ev.name">
+  <button type="button" class="remove" (click)="removeEvidence(i)">Quitar</button>
+</div>
+
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-sm ghost" (click)="resetForm()">Limpiar</button>
+        <button type="button" class="btn-sm warn" [disabled]="!isEditing" (click)="openAnular(editId!)">Anular</button>
+        <button type="submit" class="btn-sm primary">{{ isEditing ? 'Guardar cambios' : 'Guardar multa' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Listado -->
+<div class="cardx" style="margin-top:20px;">
+  <div class="cardx-head">
+    <h3>Multas registradas</h3>
+    <span class="help">Aquí puedes ver todas las multas registradas (sesión actual).</span>
+  </div>
+  <div style="overflow:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Placa</th>
+          <th>Monto</th>
+          <th>Fecha/Hora</th>
+          <th>Estado</th>
+          <th style="min-width:220px;">Acciones</th>
+        </tr>
+      </thead>
+<tbody>
+  <tr *ngFor="let m of multas; trackBy: trackByMultaId">
+    <td>#{{ m.id }}</td>
+    <td>{{ m.tipo }}</td>
+    <td>{{ m.vehiculo }}</td>
+    <td>Q {{ m.monto | number : '1.2-2' }}</td>
+    <td>{{ formatDate(m.fecha) }}</td>
+    <td><span [ngClass]="statusClass(m.estado)">{{ m.estado | titlecase }}</span></td>
+    <td class="row-actions">
+      <button class="btn-sm primary" (click)="startEdit(m)">Editar</button>
+      <button class="btn-sm danger"  (click)="openAnular(m.id)">Anular</button>
+      <button class="btn-sm ghost"   (click)="ver(m)">Ver</button>
+    </td>
+  </tr>
+</tbody>
+
+    </table>
+  </div>
+</div>
+
+<!-- Modal Anular -->
+<div class="simple-backdrop" [class.show]="showAnularModal" (click)="closeModal()">
+  <div class="simple-modal" (click)="$event.stopPropagation()">
+    <h3>Anular infracción</h3>
+    <p>¿Seguro que deseas <strong>anular</strong> esta multa? Esta acción marcará su estado como “Anulada”.</p>
+    <div class="modal-actions">
+      <button class="btn-sm ghost" (click)="closeModal()">Cancelar</button>
+      <button class="btn-sm danger" (click)="confirmAnular()">Anular</button>
+    </div>
+  </div>
+</div>
