@@ -55,6 +55,19 @@ function validateUser(usuario,password){
     });
 }
 
+function getUserByVehiculePlate(plate){
+    return new Promise( (resolve,reject) => {
+        let q =`SELECT * FROM usuario_vehiculo where  placa_vehiculo ='${plate}' LIMIT 1`;
+        console.log(q);
+        connection.query(q,(error,result) => {
+            if(error) return reject(error);
+            resolve(result);
+        })
+    });
+}
+
+
+
 async function createUser(table,record)
 {
 
@@ -81,7 +94,34 @@ function insertRecord(table,record){
     });
 }
 
-function updateRecord(table,record){
+function updatePenalty(monto,motivo,id){
+
+    return new Promise( (resolve,reject) => {
+        connection.query(`
+                UPDATE multa_sancion
+                SET monto = ${monto},
+                descripcion = '${motivo}'
+                WHERE id_multa_sancion = ${id} AND anulada =0;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            })
+    });
+
+
+}
+
+function removePenalty(id){
+
+    return new Promise( (resolve,reject) => {
+        connection.query(`
+                UPDATE multa_sancion
+                SET anulada = 1
+                WHERE id_multa_sancion = ${id} AND anulada =0;`, (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            })
+    });
+
 
 }
 
@@ -398,7 +438,6 @@ module.exports ={
     selectAll,
     selectRecord,
     insertRecord,
-    updateRecord,
     removeRecord,
     totalInvertido,
     vehiculosParqueados,
@@ -409,6 +448,9 @@ module.exports ={
     createUser,
     asignarParqueoManual,
     asignarParqueoUsuario,
-    obtenerEspaciosDisponibles,
+    obtenerEspaciosDisponibles,    
+    getUserByVehiculePlate,
+    updatePenalty,
+    removePenalty,
     registrarSalida
-};
+}
