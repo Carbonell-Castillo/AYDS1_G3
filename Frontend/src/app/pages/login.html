@@ -1,26 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
 
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
-      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/regular.min.css"
-      integrity="sha512-wwQ/gaGbUFM5xDtqajxQCwISzM1GWLK1T3Ml4ZIIrQ3AciO7bDi9eRynkzdpXwiwGBmdpCgZqfVYeZu5UjVeCw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-  </head>
-  <body>
+<div class="principal-container">
 <div class="container" [class.right-panel-active]="rightPanel()">
   <!-- Registro -->
   <div class="form-container sign-up-container">
@@ -103,7 +82,6 @@
                  accept="image/*"
                  (change)="onFileChange($event, dropHost)" />
 
-          <!-- Si hay archivo, muestra caja de éxito -->
           <div class="success-wrap" [class.hidden]="!signupForm.value.licencia" [class.show]="!!signupForm.value.licencia">
             <svg class="checkmark" viewBox="0 0 52 52" aria-hidden="true">
               <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"></circle>
@@ -116,7 +94,6 @@
           </div>
         </div>
       </section>
-
 
       <div class="actions">
         <button type="button" class="btn ghost" (click)="back()" [disabled]="current() === 0">
@@ -139,17 +116,23 @@
 
   <!-- Login -->
   <div class="form-container sign-in-container">
-    <form [formGroup]="signinForm" (ngSubmit)="submitSignin()">
-      <h1>EasyPark</h1>
-      <div class="social-container">
-        <a href="#" class="social"><i class="fab fa-github"></i></a>
-      </div>
-      <span>O utiliza tu cuenta</span>
-      <input type="email" placeholder="Email" formControlName="email" />
-      <input type="password" placeholder="Password" formControlName="password" />
-      <a href="#">¿Olvidaste tu contraseña?</a>
-      <button type="submit">Iniciar sesión</button>
-    </form>
+<form [formGroup]="signinForm" (ngSubmit)="submitSignin()">
+  <h1>EasyPark</h1>
+  <div class="social-container">
+    <a href="#" class="social"><i class="fab fa-github"></i></a>
+  </div>
+  <span>O utiliza tu cuenta</span>
+
+  <!-- Antes: formControlName="email" -->
+  <input type="text" placeholder="Email o DPI" formControlName="usuario" />
+  <div class="error" *ngIf="signinForm.get('usuario')?.touched && signinForm.get('usuario')?.invalid">
+    Ingresa un email válido o un DPI de 13 dígitos.
+  </div>
+
+  <input type="password" placeholder="Password" formControlName="password" />
+  <button type="submit">Iniciar sesión</button>
+</form>
+
   </div>
 
   <!-- Overlays -->
@@ -168,8 +151,4 @@
     </div>
   </div>
 </div>
-
-  </body>
-</html>
-
-
+</div>
