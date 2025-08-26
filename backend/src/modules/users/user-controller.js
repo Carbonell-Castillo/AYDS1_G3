@@ -12,6 +12,68 @@ function validateUser(usuario,password)
 
 }
 
+const getPenaltiesByDpi = async (dpi) => {
+
+    try {
+            return await db.getUserByDpi(dpi)
+            .then( async (result) => {
+                let selectedUser = '';
+                result.forEach((element, index) => {
+                    selectedUser = element.usuario;
+                });
+                if(result.length > 0)
+                    return getPenaltiesByUser(selectedUser);                              
+                else
+                                return {
+                    "bloqueado": false,
+                    "motivo": "El usuario no existe",
+                    "multasPendientes": []
+                    };
+
+            })
+            .catch((error) => {
+                console.log(error);
+                throw error;
+            });
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+function getPenaltiesByUser(usuario)
+{
+    
+    return db.penaltiesByUser(usuario)
+    .then ((result) => {
+        if(result.length > 0){
+
+            return {
+                    "bloqueado": true,
+                    "motivo": result[0].descripcion,
+                    "multasPendientes": result.map((item)  => item.id_multa_sancion)
+                    };
+        }
+        else{
+            return {
+                    "bloqueado": false,
+                    "motivo": "",
+                    "multasPendientes": []
+                    };
+
+        }
+
+    })
+    .catch((error)=>
+        {
+            console.log(error);
+            throw error;
+        })
+
+}
+
 const createUser = async (reqParams) => {
     try {
         const result = await db.createUser('usuario', {
@@ -40,7 +102,7 @@ function getTotalInvertido(dpi) {
     return db.selectRecord('usuario', { usuario: dpi })
     .then((user) => {
         if (!user) throw new Error('User not found');
-        return db.totalInvertido('ingreso', { usuario: user.usuario });
+        return db.totalInvertido('pago', { usuario: user.usuario });
     });
 }
 
@@ -79,6 +141,23 @@ function getVehiculos(dpi) {
     });
 }
 
+function getPagos(dpi) {
+    return db.selectRecord('usuario', { usuario: dpi })
+    .then(async (user) => {
+        if (!user) throw new Error('User not found');
+        const pagos = await db.selectAll('pago', { usuario: user.usuario });
+        const pagosMapped = pagos.map(pago => ({
+            reciboId: pago.id_pago,
+            placa: pago.placa_vehiculo,
+            monto: pago.monto,
+            fecha: pago.fecha_hora_pago
+        }));
+        return {
+            "pagos": pagosMapped
+        }
+    });
+}
+
 module.exports = {
     getUsers,
     getTotalInvertido,
@@ -86,5 +165,8 @@ module.exports = {
     getVehiculosCount,
     getVehiculos,
     validateUser,
-    createUser
+    createUser,
+    getPagos,
+    getPenaltiesByDpi,
+    getPenaltiesByUser
 };

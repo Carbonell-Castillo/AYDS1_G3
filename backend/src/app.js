@@ -3,6 +3,8 @@ const config = require("./config");
 
 const users = require("./modules/users/routes.js");
 const parqueo = require("./modules/parqueo/routes.js");
+const multas = require("./modules/multas/routes.js");
+const reportes = require("./modules/reportes/routes.js");
 
 const app = express();
 app.use(express.json());
@@ -12,5 +14,7 @@ app.use(express.json());
 
 app.use("/api/usuarios", users);
 app.use("/api/parqueo", parqueo);
+app.use("/api/multas", multas);
+app.use("/api/reportes", reportes);
 
 module.exports = app;
